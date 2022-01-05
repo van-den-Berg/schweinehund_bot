@@ -1,3 +1,5 @@
 {
   "tel_api_token": "YOUR_API_TOKEN"
+  "users_file_path": "data/users.json",
+  "strings_path": "lib/strings.json"
 }

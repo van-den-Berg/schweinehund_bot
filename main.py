@@ -9,16 +9,16 @@ import json
 
 # import telegram_send
 from models.Activity import Activity
-from services.json_service import read_json
+from services.FileServices import read_json
 from models import User
+from services.MessageServices import get_sender_id
 
 configJson = read_json('config.json')
 
 bot = telebot.TeleBot(
     token=configJson["tel_api_token"])  # supply your future bot with the token you have received
 msg: list = []
-userData: dict = {}
-dataset: dict = {}
+users: dict
 
 
 @bot.message_handler(commands=['define', 'Define'])
@@ -39,11 +39,14 @@ def print_list(message):
                      text=str(msg))
 
 
-@bot.message_handler(commands=['save'])
+@bot.message_handler(commands=['printMessage'])  # PPrints the content of the sent message
 def save_to_json(message):
     bot.send_message(chat_id=message.chat.id, text=str(message))
 
 
+@bot.message_handler(commands=['printUserId'])  # PPrints the content of the sent message
+def save_to_json(message):
+    bot.send_message(chat_id=message.chat.id, text=str(get_sender_id(message)))
 # def add_user(user: User, chat_id):
 #    user_doc: dict = {}
 #    user_doc["chat_id"] = chat_id

@@ -1,5 +1,4 @@
 from datetime import date
-
 from models.Activity import Activity
 
 
