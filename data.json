@@ -1,3 +1,39 @@
 {
-  
+  "users": {
+    "userid1": {
+      "tel_username": "the_telegram_username",
+      "username": "the_username",
+      "private_chat_id": "xyz",
+      "active_groups": ["group_id1", "group_id2"]
+    }
+  },
+  "groups": {
+    "group_id1": {
+      "active_users": ["userid1", "userid2"],
+      "all_users": ["userid1", "userid2", "userid82"],
+      "money_pot": 2000,
+      "user_accounts": {
+        "userid1": {
+          "current_points": 12,
+          "balance": -2000
+        },
+        "userid2": {
+
+        }
+      },
+      "habit_tracking": [
+        {
+          "user_id": "userid1",
+          "activity": 1,
+          "date": 12341243
+        },
+        {
+          "user_id": "userid2",
+          "activity": 3,
+          "date": 12341234
+        }
+
+      ]
+    }
+  }
 }
