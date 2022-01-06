@@ -22,4 +22,5 @@ class User:
         self.last_name = self.last_name if last_name is None else last_name
         self.private_chat_id = self.private_chat_id if private_chat_id is None else private_chat_id
 
-    def get_callname(self) -> str: return self.calling_name
+    def get_callname(self) -> str:
+        return self.calling_name

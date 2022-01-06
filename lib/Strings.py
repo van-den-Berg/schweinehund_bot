@@ -12,6 +12,11 @@ def registration_succesfull_group(name: str) -> str:
 
 
 class Registration:
-    welcome_text = "Hey, schön dass du auch versuchst, deinen Arsch hoch zu bekommen! Damit alle wissen mit wem sie sich anlegen, fehllt noch dein Name. Mit diesem Namen wirst du in Zukunft von mir angesprochen und in Zusammenfassungen auftauchen. \n \n Wie darf ich dich nennen?"
-    first_need_to_open_chat = "Damit du mitmachen kannst, musst du mich bei dir starten. Gehe dazu auf mein Profil und beginne einen Chat. Anschließend kannst du hierher zurückkommen und dich registrieren."
+    welcome_text = "Hey, schön dass du auch versuchst, deinen Arsch hoch zu bekommen! " \
+                   "Damit alle wissen mit wem sie sich anlegen, fehlt noch dein Name. " \
+                   "Mit diesem Namen wirst du in Zukunft von mir angesprochen und in Zusammenfassungen auftauchen. " \
+                   "\n \n Wie darf ich dich nennen?"
+    first_need_to_open_chat = "Damit du mitmachen kannst, musst du mich bei dir starten. " \
+                              "Gehe dazu auf mein Profil und beginne einen Chat. " \
+                              "Anschließend kannst du hierher zurückkommen und dich registrieren."
     already_registered = "Du bist bereits mit im Team!"

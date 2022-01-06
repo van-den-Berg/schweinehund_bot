@@ -6,6 +6,7 @@ import telebot  # importing pyTelegramBotAPI library
 import time
 import sys
 import json
+from typing import Dict
 
 # import telegram_send
 from lib.Strings import registration_succesfull_group, registration_succesfull_private
@@ -21,7 +22,7 @@ configJson = FileServices.read_json('config.json')
 bot = telebot.TeleBot(
     token=configJson["tel_api_token"])  # supply your future bot with the token you have received
 list_of_items_scrap: list = []
-users: dict[int, User] = {-1: User(uid=-1, calling_name="dummy")}
+users: Dict[int, User] = {-1: User(uid=-1, calling_name="dummy")}
 
 
 @bot.message_handler(commands=['define', 'Define'])
@@ -54,7 +55,7 @@ def print_user_id(msg: message):
 
 @bot.message_handler(commands=['register'])
 def register(msg: message):
-    if users is not None and get_sender_id(msg) in users:
+    if users is not None and get_sender_id(msg) in users: #User already registered
         bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
         return
     else:
