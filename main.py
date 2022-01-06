@@ -25,10 +25,16 @@ list_of_items_scrap: list = []
 users: Dict[int, User] = {-1: User(uid=-1, calling_name="dummy")}
 
 
+@bot.message_handler(commands=["startBot"])
+def echo_msg(msg: message):
+    echo = bot.send_message(chat_id=msg.chat.id, text='Not implemented yet')
+
+
 @bot.message_handler(commands=['define', 'Define'])
 def echo_msg(msg: message):
     echo = bot.send_message(chat_id=msg.chat.id,
-                            text='What word would you want me to save, sir?')
+                            text='This is a dummy function. It will add an input into a list. \n '
+                                 'What would you like to add?')
     bot.register_next_step_handler(message=echo, callback=extract_msg)
 
 
@@ -37,7 +43,7 @@ def extract_msg(msg: message):
     print(list_of_items_scrap)
 
 
-@bot.message_handler(commands=['print'])
+@bot.message_handler(commands=['printList'])
 def print_list(msg: message):
     bot.send_message(chat_id=msg.chat.id,
                      text=str(list_of_items_scrap))
@@ -55,7 +61,7 @@ def print_user_id(msg: message):
 
 @bot.message_handler(commands=['register'])
 def register(msg: message):
-    if users is not None and get_sender_id(msg) in users: #User already registered
+    if users is not None and get_sender_id(msg) in users:  # User already registered
         bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
         return
     else:
