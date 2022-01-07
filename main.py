@@ -84,6 +84,7 @@ def register_user(msg: message, group_chat_id: int):
 
 
 def main_loop():
+    Mocking.mock_userdata()
     bot.polling(none_stop=True)
     while True:
         time.sleep(1)
