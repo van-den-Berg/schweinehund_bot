@@ -19,10 +19,13 @@ from services.MessageServices import get_sender_id
 from lib import Strings
 from testing import Mocking
 
-configJson = FileServices.read_json('config.json')
+config_json_path = 'config.json'
+data_json_path = 'data.json'
+
+config_dict = FileServices.read_json(config_json_path)
 
 bot = telebot.TeleBot(
-    token=configJson["tel_api_token"])  # supply your future bot with the token you have received
+    token=config_dict["tel_api_token"])  # supply your future bot with the token you have received
 list_of_items_scrap: list = []
 users: Dict[int, User] = {-1: User(uid=-1, calling_name="dummy")}
 
@@ -63,7 +66,9 @@ def print_user_id(msg: message):
 
 @bot.message_handler(commands=['register'])
 def register(msg: message):
-    if users is not None and get_sender_id(msg) in users:  # User already registered
+    data_dict = FileServices.read_json(data_json_path)
+    print(msg)
+    if get_sender_id(msg) in data_dict['users'].keys():  # User already registered
         bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
         return
     else:
@@ -75,10 +80,12 @@ def register(msg: message):
 
 
 def register_user(msg: message, group_chat_id: int):
+    data_dict = FileServices.read_json(data_json_path)
     uid = get_sender_id(msg)
     new_user: User = User(uid=uid, calling_name=msg.text)
     users[uid] = new_user
     bot.send_message(msg.chat.id, registration_succesfull_private(new_user.get_callname()))
+
     bot.send_message(group_chat_id, registration_succesfull_group(new_user.get_callname()))
     print(str(users))
 
