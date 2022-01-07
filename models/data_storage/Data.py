@@ -36,7 +36,7 @@ class Group(dict):
     def add_habit_entry(self, new_habit_entry: HabitEntry):
         habits: list[HabitEntry] = dict.get(self, "habit_tracking")
         habits.append(new_habit_entry)
-        dict.__setitem__(self, "habit_tracking", habits)
+        #dict.__setitem__(self, "habit_tracking", habits)
 
 
 class User(dict):
@@ -59,13 +59,14 @@ class Data(dict):
     def add_user(self, new_user: User):
         user_list: dict[str, User] = dict.get(self, "users")
         if new_user.user_id not in user_list.keys():
-            user_list.__setitem__(new_user.user_id, new_user)
-        dict.__setitem__(self, "users", user_list)
+            user_list[new_user.user_id] = new_user
+            #user_list.__setitem__(new_user.user_id, new_user)
+        #dict.__setitem__(self, "users", user_list)
 
     def remove_user(self, user_id: str):
         user_list: dict[str, User] = dict.get(self, "users")
         user_list.pop(user_id)
-        dict.__setitem__(self, "users", user_id)
+        #dict.__setitem__(self, "users", user_id)
 
     def add_habit_entry(self, new_habit_entry: HabitEntry):
         users: dict[str, User] = dict.get(self, "users")
@@ -74,3 +75,8 @@ class Data(dict):
         active_groups: list[str] = users.get(userid).get("active_groups")
         for group_id in active_groups:
             groups.get(group_id).add_habit_entry(new_habit_entry)
+
+    def add_group(self, new_group: Group):
+        users: dict[str, User] = dict.get(self, "users")
+        groups: dict[str, Group] = dict.get(self, "groups")
+        # not implemented yet
