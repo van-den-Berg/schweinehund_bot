@@ -2,6 +2,7 @@
 from enum import Enum
 from datetime import date
 import json
+
 import telebot  # importing pyTelegramBotAPI library
 import time
 import sys
@@ -13,9 +14,10 @@ from lib.Strings import registration_succesfull_group, registration_succesfull_p
 from models.Activity import Activity
 from services import FileServices
 from telegram import message
-from models.User import User
+from models.TelegramUser import User
 from services.MessageServices import get_sender_id
 from lib import Strings
+from testing import Mocking
 
 configJson = FileServices.read_json('config.json')
 
