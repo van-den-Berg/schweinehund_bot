@@ -65,6 +65,10 @@ class Data(dict):
             #user_list.__setitem__(new_user.user_id, new_user)
         #dict.__setitem__(self, "users", user_list)
 
+    # TODO: needs testing
+    def get_user(self, user_id: str) -> User:
+        return dict.get(self, "users").get(user_id)
+
     def remove_user(self, user_id: str):
         user_list: Dict[str, User] = dict.get(self, "users")
         user_list.pop(user_id)
@@ -73,12 +77,42 @@ class Data(dict):
     def add_habit_entry(self, new_habit_entry: HabitEntry):
         users: Dict[str, User] = dict.get(self, "users")
         groups: Dict[str, Group] = dict.get(self, "groups")
-        userid: str = HabitEntry.get("user_id")
+        userid: str = new_habit_entry.get("user_id")
         active_groups: List[str] = users.get(userid).get("active_groups")
         for group_id in active_groups:
             groups.get(group_id).add_habit_entry(new_habit_entry)
 
+    #TODO: needs testing
     def add_group(self, new_group: Group):
+        new_group_id: str = new_group.group_id
+        new_group_active_users: List[str] = new_group.get("active_users")
         users: Dict[str, User] = dict.get(self, "users")
         groups: Dict[str, Group] = dict.get(self, "groups")
-        # not implemented yet
+        if new_group_id in groups:
+            #TODO: throw error: "group already exists"
+            print("not implemented yet. ")
+        else:
+            groups[new_group_id] = new_group
+            for user_id in new_group_active_users:
+                users.get(user_id).get("active_groups").append(new_group_id)
+
+    #TODO: need testing
+    def get_group(self, group_id:str) -> Group:
+        return dict.get(self, "groups").get(group_id)
+
+    #TODO: need testing
+    # returning True if succeeded
+    def user_join_group(self, user_id: str, group_id: str) -> bool:
+        users: Dict[str, User] = dict.get(self, "users")
+        groups: Dict[str, Group] = dict.get(self, "groups")
+        if (user_id in users) and (group_id in groups):
+            group: Group = groups.get(group_id)
+            active_users: List[str] = group.get("active_users")
+            all_users: List[str] = group.get("all_users")
+
+            if not user_id in all_users: all_users.append(user_id)
+            if not user_id in active_users: active_users.append(user_id)
+
+            users.get(user_id).get("active_groups").append(group_id)
+            return True
+        return False
