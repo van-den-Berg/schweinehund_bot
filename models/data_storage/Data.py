@@ -25,7 +25,7 @@ class Group:
     group_id: str
     active_users: Set[str]
     all_users: Set[str]
-    user_accounts: Dict[str:GroupUserAccount]
+    user_accounts: Dict[str, GroupUserAccount]
     habit_tracking: List[HabitEntry]
     money_pool: int = 0
 
@@ -51,7 +51,7 @@ class Data:
 
     ## TODO: read this
     # I don't think we need this one can just use data_object.users[user_id]
-    #def get_user(self, user_id: str) -> User:
+    # def get_user(self, user_id: str) -> User:
     #    return self.users[user_id]
 
     def remove_user(self, user_id: str):
@@ -76,7 +76,7 @@ class Data:
 
     # TODO: Read this
     # I don't think we need this, see above
-    #def get_group(self, group_id: str) -> Group:
+    # def get_group(self, group_id: str) -> Group:
     #    return self.groups[group_id]
 
     # TODO: need testing
