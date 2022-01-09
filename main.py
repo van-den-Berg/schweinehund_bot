@@ -17,25 +17,21 @@ from services.MessageServices import get_sender_id
 from lib import Strings
 from testing import Mocking
 
-mocking = True
-
 config_json_path: str = 'config.json'
-data_json_path: str = 'data.json'
-mock_data_json_path: str = 'mock_data.json'
-group_whitelist_path: str = 'group_whitelist.csv'
+data_json_path: str
+group_whitelist_path: str
 
 with open(config_json_path) as rf:
     config_dict = json.load(rf)
 bot = telebot.TeleBot(token=config_dict["tel_api_token"])
 
-with open(group_whitelist_path) as rf:
-    group_whitelist: List[int] = [int(i) for i in rf.read().replace(',', '').split()]
+
+# TODO: is this a job for the FileServices?
 
 # get data
 if mocking:
-    data_obj = Mocking.mock_userdata()
-    data_json_path = mock_data_json_path
-    os.remove(data_json_path)
+    data_obj = Mocking.mock_userdata(data_json_path)
+    os.remove(data_json_path) #TODO read: why removing the freshly written data and save it again?
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 else:
     if os.path.isfile(data_json_path):
@@ -58,7 +54,8 @@ def print_user_id(msg: message):
 
 @bot.message_handler(commands=['register'])
 def register(msg: message):
-    data_obj = FileServices.read_json(data_json_path)
+    #TODO: es meckert, da: "shadows name from outer scope"
+    data_obj: Data = FileServices.read_json(data_json_path)
     print(msg)
     if get_sender_id(msg) in data_obj.users.keys():  # User already registered
         if msg.from_user.id in data_obj.users[msg.from_user.id].active_groups:  # User already registered

@@ -1,5 +1,13 @@
 {
   "tel_api_token": "YOUR_API_TOKEN",
   "users_file_path": "data/users.json",
-  "strings_path": "lib/strings.json"
+
+
+
+  
+  "mocking": true,
+  "group_whitelist_path": "group_whitelist.csv",
+  "strings_path": "lib/strings.json",
+  "data_json_path": "data.json",
+  "mock_data_json_path": "mock_data.json"
 }
