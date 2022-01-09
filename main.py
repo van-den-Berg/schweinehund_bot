@@ -9,10 +9,10 @@ import sys
 
 # import telegram_send
 from lib.Strings import registration_succesfull_group, registration_succesfull_private
-from models.data_storage.Data import Data, Group, GroupUserAccount
+from models.Data import Data, Group, GroupUserAccount
 from services import FileServices
 from telegram import message
-from models.TelegramUser import User
+from models.User import User
 from services.MessageServices import get_sender_id
 from lib import Strings
 from testing import Mocking

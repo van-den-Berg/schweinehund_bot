@@ -1,5 +1,5 @@
 import services.FileServices
-from models.data_storage import Data
+from models import Data
 
 
 def mock_userdata() -> Data:

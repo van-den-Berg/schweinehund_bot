@@ -3,52 +3,25 @@ import dataclasses
 from typing import List, Dict, Set
 
 from models.Activity import Activity
-from models.TelegramUser import User
-
-
-@dataclasses.dataclass
-class HabitEntry:
-    user_id: int
-    activity: Activity
-    date: str  # isoformated datetime. has to be a string in order to be serializable for JSON
-
-
-@dataclasses.dataclass
-class GroupUserAccount:
-    userid: int
-    username: str
-    current_points: int = 0
-    balance: int = 0
-
-
-@dataclasses.dataclass
-class Group:
-    group_id: int
-    active_users: Set[int]
-    all_users: Set[int]
-    user_accounts: Dict[int, GroupUserAccount]
-    habit_tracking: List[HabitEntry]
-    money_pool: int = 0
-
-    def add_habit_entry(self, new_habit_entry: HabitEntry):
-        self.habit_tracking.append(new_habit_entry)
-
+from models.Group import Group
+from models.User import User, GroupUserAccount
+from models.HabitEntry import HabitEntry
 
 
 @dataclasses.dataclass
 class Data:
-    users: Dict[int, User]
-    groups: Dict[int, Group]
+    users: Dict[str, User]
+    groups: Dict[str, Group]
 
     def add_user(self, new_user: User):
-        self.users[new_user.id] = new_user
+        self.users[new_user.user_id] = new_user
 
     ## TODO: read this
     # I don't think we need this one can just use data_object.users[user_id]
     # def get_user(self, user_id: str) -> User:
     #    return self.users[user_id]
 
-    def remove_user(self, user_id: int):
+    def remove_user(self, user_id: str):
         self.users.pop(user_id)
 
     def add_habit_entry(self, new_habit_entry: HabitEntry):
@@ -57,12 +30,10 @@ class Data:
 
     # TODO: needs testing
     def add_group(self, new_group: Group):
-
         if new_group.group_id in self.groups.keys():
             # TODO: throw error: "group already exists"
             # I think a print should suffice, otherwise the whole bot stops.
             print(f"The group with id {new_group.group_id} does already exist. It wasn't changed.")
-
         else:
             self.groups[new_group.group_id] = new_group
             for user_id in new_group.all_users:
@@ -70,13 +41,12 @@ class Data:
 
     # TODO: Read this
     # I don't think we need this, see above
-    # def get_group(self, group_id: str) -> Group:
+    # def get_group(self, group_id: str) -> Group.py:
     #    return self.groups[group_id]
 
     # TODO: need testing
     # returning True if succeeded
-    def user_join_group(self, user_id: int, group_id: int) -> bool:
-
+    def user_join_group(self, user_id: str, group_id: str) -> bool:
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):
             self.groups[group_id].all_users.add(user_id)
             self.groups[group_id].active_users.add(user_id)
