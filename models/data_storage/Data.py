@@ -3,18 +3,19 @@ import dataclasses
 from typing import List, Dict, Set
 
 from models.Activity import Activity
+from models.TelegramUser import User
 
 
 @dataclasses.dataclass
 class HabitEntry:
-    user_id: str
+    user_id: int
     activity: Activity
     date: str  # isoformated datetime. has to be a string in order to be serializable for JSON
 
 
 @dataclasses.dataclass
 class GroupUserAccount:
-    userid: str
+    userid: int
     username: str
     current_points: int = 0
     balance: int = 0
@@ -22,10 +23,10 @@ class GroupUserAccount:
 
 @dataclasses.dataclass
 class Group:
-    group_id: str
-    active_users: Set[str]
-    all_users: Set[str]
-    user_accounts: Dict[str, GroupUserAccount]
+    group_id: int
+    active_users: Set[int]
+    all_users: Set[int]
+    user_accounts: Dict[int, GroupUserAccount]
     habit_tracking: List[HabitEntry]
     money_pool: int = 0
 
@@ -33,28 +34,21 @@ class Group:
         self.habit_tracking.append(new_habit_entry)
 
 
-@dataclasses.dataclass
-class User:
-    user_id: str
-    tel_username: str
-    private_chat_id: str
-    active_groups: List[str]
-
 
 @dataclasses.dataclass
 class Data:
-    users: Dict[str, User]
-    groups: Dict[str, Group]
+    users: Dict[int, User]
+    groups: Dict[int, Group]
 
     def add_user(self, new_user: User):
-        self.users[new_user.user_id] = new_user
+        self.users[new_user.id] = new_user
 
     ## TODO: read this
     # I don't think we need this one can just use data_object.users[user_id]
     # def get_user(self, user_id: str) -> User:
     #    return self.users[user_id]
 
-    def remove_user(self, user_id: str):
+    def remove_user(self, user_id: int):
         self.users.pop(user_id)
 
     def add_habit_entry(self, new_habit_entry: HabitEntry):
@@ -72,7 +66,7 @@ class Data:
         else:
             self.groups[new_group.group_id] = new_group
             for user_id in new_group.all_users:
-                self.users[user_id].active_groups.append(new_group.group_id)
+                self.users[user_id].active_groups.add(new_group.group_id)
 
     # TODO: Read this
     # I don't think we need this, see above
@@ -81,7 +75,7 @@ class Data:
 
     # TODO: need testing
     # returning True if succeeded
-    def user_join_group(self, user_id: str, group_id: str) -> bool:
+    def user_join_group(self, user_id: int, group_id: int) -> bool:
 
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):
             self.groups[group_id].all_users.add(user_id)

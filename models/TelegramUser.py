@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Set
 
 
 @dataclasses.dataclass
@@ -9,3 +10,4 @@ class User:
     first_name: str
     last_name: str
     private_chat_id: int
+    active_groups: Set[int]
