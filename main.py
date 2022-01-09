@@ -85,26 +85,34 @@ def join_new_group(msg: message, group_chat_id: int) -> Data:
         group_user = GroupUserAccount(userid=msg.from_user.id, username=data_obj.users[msg.from_user.id].calling_name)
 
         data_obj.add_group(
-            Group(group_id=group_chat_id, active_users=set(msg.from_user.id), all_users=set(msg.from_user.id),
+            Group(group_id=group_chat_id, active_users={msg.from_user.id}, all_users={msg.from_user.id},
                   user_accounts={msg.from_user.id: group_user}, habit_tracking=[]))
         data_obj.user_join_group(user_id=msg.from_user.id, group_id=group_chat_id)
 
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+
         return data_obj
+
+    else:
+        data_obj.user_join_group(user_id=msg.from_user.id, group_id=group_chat_id)
+
+        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+
+        return data_obj
+
 
 
 
 def register_user(msg: message, group_chat_id: int) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
-    new_user: User = User(id=msg.from_user.id, calling_name=msg.text, first_name=msg.from_user.first_name,
+    new_user: User = User(id=int(msg.from_user.id), calling_name=msg.text, first_name=msg.from_user.first_name,
                           last_name=msg.from_user.last_name, username=msg.from_user.username,
                           private_chat_id=msg.chat.id, active_groups={group_chat_id})
-    data_obj.users[msg.from_user.id] = new_user
-
-    data_obj.user_join_group(user_id=msg.from_user.id, group_id=group_chat_id)
+    data_obj.users[int(msg.from_user.id)] = new_user
 
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    data_obj = join_new_group(msg, group_chat_id)
 
     bot.send_message(msg.chat.id, registration_succesfull_private(new_user.calling_name))
 
