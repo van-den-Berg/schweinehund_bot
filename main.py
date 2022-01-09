@@ -24,9 +24,14 @@ group_whitelist_path: str
 with open(config_json_path) as rf:
     config_dict = json.load(rf)
 bot = telebot.TeleBot(token=config_dict["tel_api_token"])
+mocking: bool = config_dict["mocking"]
+data_json_path = config_dict["data_json_path"] if mocking else config_dict["mocking_data_json_path"]
+group_whitelist_path = config_dict["group_whitelist_path"]
 
 
 # TODO: is this a job for the FileServices?
+#with open(group_whitelist_path) as rf:
+#    group_whitelist: List[int] = [int(i) for i in rf.read().replace(',', '').split()]
 
 # get data
 if mocking:
@@ -75,9 +80,10 @@ def register(msg: message):
 def join_new_group(msg: message, group_chat_id: int) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
-    if group_chat_id not in group_whitelist:
-        bot.send_message(msg.from_user.id, Strings.group_not_allowed(msg.chat.id))
-        return data_obj
+
+    #if group_chat_id not in group_whitelist:
+    #    bot.send_message(msg.from_user.id, Strings.group_not_allowed(msg.chat.id))
+    #    return data_obj
 
     if group_chat_id not in data_obj.groups.keys():
         group_user = GroupUserAccount(userid=msg.from_user.id, username=data_obj.users[msg.from_user.id].calling_name)
@@ -97,8 +103,6 @@ def join_new_group(msg: message, group_chat_id: int) -> Data:
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
         return data_obj
-
-
 
 
 def register_user(msg: message, group_chat_id: int) -> Data:
