@@ -11,8 +11,15 @@ def registration_succesfull_group(name: str) -> str:
     return "Woop Woop! Begrüßt " + name + " im Team!!"
 
 
-def group_not_allowed(group_id:int):
+def group_not_allowed(group_id: int):
     return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
+
+
+def init_no_data_at_location(path: str):
+    return "There is no file at provided path \n " \
+           "'data_json_path': '{}'. \n " \
+           "A empty file for storing the data will be generated. \n " \
+           "If there should be a file with valid data, please check the config.json".format(path)
 
 
 class Registration:

@@ -41,6 +41,7 @@ else:
     if os.path.isfile(data_json_path):
         data_obj = FileServices.read_json(data_json_path)
     else:
+        print(Strings.init_no_data_at_location(data_json_path))
         data_obj = Data(users={}, groups={})
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
