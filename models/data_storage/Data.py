@@ -80,6 +80,6 @@ class Data:
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):
             self.groups[group_id].all_users.add(user_id)
             self.groups[group_id].active_users.add(user_id)
-            self.users[user_id].active_groups.append(group_id)
+            self.users[user_id].active_groups.add(group_id)
             return True
         return False
