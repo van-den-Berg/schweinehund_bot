@@ -5,13 +5,13 @@ import jsonpickle as jsonpickle
 from models.data_storage import Data
 
 
-def read_json(file_path: str) -> dict:
+def read_json(file_path: str) -> Data.Data:
     classes_for_decoding = (Data.HabitEntry, Data.GroupUserAccount, Data.Group, Data.User, Data.Data)
     with open(file_path, 'r') as read_file:
 
         portalocker.lock(read_file, portalocker.LOCK_EX)
 
-        json_obj = jsonpickle.decode(read_file.read(), classes=classes_for_decoding)
+        json_obj: Data.Data = jsonpickle.decode(read_file.read(), classes=classes_for_decoding)
 
         portalocker.unlock(read_file)
 
