@@ -32,7 +32,7 @@ group_whitelist_path = config_dict["group_whitelist_path"]
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 
 # get data
-if mocking: # create new instance of mocked data, overwrite the old one.
+if mocking:  # create new instance of mocked data, overwrite the old one.
     data_obj = Mocking.mock_userdata(data_json_path)
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
@@ -55,7 +55,7 @@ def print_user_id(msg: message):
     bot.send_message(chat_id=msg.chat.id, text=str(get_sender_id(msg)))
 
 
-@bot.message_handler(commands=['register'])
+@bot.message_handler(commands=['join'])
 def register(msg: message):
     # TODO: es meckert, da: "shadows name from outer scope".
     #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen wenn wir dinge umbenennen,
@@ -66,36 +66,37 @@ def register(msg: message):
     #  ich kann bei Gelegenheit nochmal Niklas fragen was
     #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
-    #print(msg)
-    if get_sender_id(msg) in data_obj.users.keys():  # User already registered
-        if str(msg.from_user.id) in data_obj.users[str(msg.from_user.id)].active_groups:  # User already registered
-            bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
-            return
-        else:  # user wants to join new group
-            print('user wants to join new group')
-            data_obj = join_new_group(msg=msg, group_chat_id=str(msg.chat.id))  # group chat id is private id.
+    # print(msg)
 
-    else:  # User registers for the first time
-        print('user registers for the first time')
-        try:
-            echo = bot.send_message(msg.from_user.id, Strings.Registration.welcome_text)
-            bot.register_next_step_handler(message=echo, callback=register_user, group_chat_id=str(msg.chat.id))
-        except:
-            bot.send_message(msg.chat.id, Strings.Registration.first_need_to_open_chat)
+    # Since the User will choose a new name everytime the user joins a new group, it is one single controlflow.
+    # Not possible to make these distinctions.
+    #if get_sender_id(msg) in data_obj.users.keys():  # User already registered in the system, wants to join a group
+    #    if str(msg.from_user.id) in data_obj.users[
+    #        str(msg.from_user.id)].active_groups:  # User already registered as active member of the group
+    #        bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
+    #        return
+    #    else:  # known user wants to join new group
+    #        print('user wants to join new group')
+    #        data_obj = join_new_group(msg=msg, group_chat_id=str(msg.chat.id))  # group chat id is private id.
+
+    #else:
+    print('user wants to join a group.')
+    try:  # testing if user already opened chat with the bot
+        echo = bot.send_message(msg.from_user.id, Strings.Registration.welcome_text)
+        print('user already opened chat with bot.')
+        bot.register_next_step_handler(message=echo, callback=register_user, group_chat_id=str(msg.chat.id))
+    except:
+        bot.send_message(msg.chat.id, Strings.Registration.first_need_to_open_chat)
 
 
 def join_new_group(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
-
-
     if group_chat_id not in group_whitelist:
-        #print(group_chat_id, group_whitelist)
+        # print(group_chat_id, group_whitelist)
         bot.send_message(msg.from_user.id, Strings.group_not_allowed(group_chat_id))
         return data_obj
-
     if group_chat_id not in data_obj.groups.keys():
-        group_user = GroupUserAccount(userid=msg.from_user.id, username=data_obj.users[msg.from_user.id].calling_name)
-
+        group_user = GroupUserAccount(id=msg.from_user.id, calling_name=)
         data_obj.add_group(
             Group(group_id=group_chat_id, active_users={str(msg.from_user.id)}, all_users={str(msg.from_user.id)},
                   user_accounts={str(msg.from_user.id): group_user}, habit_tracking=[]))
@@ -104,7 +105,6 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
         return data_obj
-
     else:
         data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id))
 
@@ -113,13 +113,13 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
         return data_obj
 
 
-def register_user(msg: message, group_chat_id: int) -> Data:
+def register_user(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
-    new_user: User = User(id=int(msg.from_user.id), calling_name=msg.text, first_name=msg.from_user.first_name,
-                          last_name=msg.from_user.last_name, username=msg.from_user.username,
+    new_user: User = User(id=int(msg.from_user.id),
+                          username=msg.from_user.username,
                           private_chat_id=msg.chat.id, active_groups={group_chat_id})
-    data_obj.users[int(msg.from_user.id)] = new_user
+    data_obj.users[msg.from_user.id] = new_user
 
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
     data_obj = join_new_group(msg, group_chat_id)
