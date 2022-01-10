@@ -32,7 +32,7 @@ group_whitelist_path = config_dict["group_whitelist_path"]
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 
 # get data
-if mocking:  # create new instance of mocked data, overwrite the old one.
+if mocking: # create new instance of mocked data, overwrite the old one.
     data_obj = Mocking.mock_userdata(data_json_path)
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
@@ -87,13 +87,14 @@ def register(msg: message):
 def join_new_group(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
+
     if group_chat_id not in group_whitelist:
         #print(group_chat_id, group_whitelist)
         bot.send_message(msg.from_user.id, Strings.group_not_allowed(group_chat_id))
         return data_obj
 
     if group_chat_id not in data_obj.groups.keys():
-        group_user = GroupUserAccount(userid=str(msg.from_user.id), chosen_name=data_obj.users[str(msg.from_user.id)].chosen_name)
+        group_user = GroupUserAccount(userid=msg.from_user.id, username=data_obj.users[msg.from_user.id].calling_name)
 
         data_obj.add_group(
             Group(group_id=group_chat_id, active_users={str(msg.from_user.id)}, all_users={str(msg.from_user.id)},
@@ -112,19 +113,20 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
         return data_obj
 
 
-def register_user(msg: message, group_chat_id: str) -> Data:
+def register_user(msg: message, group_chat_id: int) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
-    tel_username: str = ' '.join((str(msg.from_user.first_name), str(msg.from_user.last_name) + ':', str(msg.from_user.username)))
-    new_user: User = User(user_id=str(msg.from_user.id), tel_username=tel_username, chosen_name=msg.text,
-                          private_chat_id=str(msg.chat.id), active_groups={group_chat_id})
-    data_obj.users[str(msg.from_user.id)] = new_user
+
+    new_user: User = User(id=int(msg.from_user.id), calling_name=msg.text, first_name=msg.from_user.first_name,
+                          last_name=msg.from_user.last_name, username=msg.from_user.username,
+                          private_chat_id=msg.chat.id, active_groups={group_chat_id})
+    data_obj.users[int(msg.from_user.id)] = new_user
 
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
     data_obj = join_new_group(msg, group_chat_id)
 
-    bot.send_message(msg.chat.id, registration_succesfull_private(new_user.chosen_name))
+    bot.send_message(msg.chat.id, registration_succesfull_private(new_user.calling_name))
 
-    bot.send_message(group_chat_id, registration_succesfull_group(new_user.chosen_name))
+    bot.send_message(group_chat_id, registration_succesfull_group(new_user.calling_name))
 
     print(data_obj)
     return data_obj
