@@ -6,6 +6,7 @@ from typing import Set
 class User:
     user_id: str
     tel_username: str
+    chosen_name: str
     private_chat_id: str
     active_groups: Set[str]
 
@@ -13,6 +14,6 @@ class User:
 @dataclasses.dataclass
 class GroupUserAccount:
     userid: str
-    username: str
+    chosen_name: str
     current_points: int = 0
     balance: int = 0
