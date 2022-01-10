@@ -1,3 +1,5 @@
+from typing import List
+
 import portalocker
 import jsonpickle as jsonpickle
 
@@ -18,3 +20,8 @@ def save_json_overwrite(json_data, file_path: str):
         portalocker.lock(write_file, portalocker.LOCK_EX)
         write_file.write(jsonpickle.encode(json_data))
         portalocker.unlock(write_file)
+
+
+def read_group_whitelist(file_path: str) -> List[str]:
+    with open(file_path) as rf:
+        return rf.read().replace(',', '').split()

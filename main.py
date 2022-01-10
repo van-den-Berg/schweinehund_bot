@@ -23,21 +23,19 @@ group_whitelist_path: str
 
 with open(config_json_path) as rf:
     config_dict = json.load(rf)
+
 bot = telebot.TeleBot(token=config_dict["tel_api_token"])
-mocking: bool = config_dict["mocking"]
-data_json_path = config_dict["data_json_path"] if mocking else config_dict["mocking_data_json_path"]
+mocking: bool = bool(config_dict["mocking"])
+data_json_path = config_dict["mocking_data_json_path"] if mocking else config_dict["data_json_path"]
 group_whitelist_path = config_dict["group_whitelist_path"]
 
-
-# TODO: is this a job for the FileServices?
-#with open(group_whitelist_path) as rf:
-#    group_whitelist: List[int] = [int(i) for i in rf.read().replace(',', '').split()]
+group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 
 # get data
-if mocking:
+if mocking: # create new instance of mocked data, overwrite the old one.
     data_obj = Mocking.mock_userdata(data_json_path)
-    os.remove(data_json_path) #TODO read: why removing the freshly written data and save it again?
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+
 else:
     if os.path.isfile(data_json_path):
         data_obj = FileServices.read_json(data_json_path)
@@ -77,13 +75,13 @@ def register(msg: message):
             bot.send_message(msg.chat.id, Strings.Registration.first_need_to_open_chat)
 
 
-def join_new_group(msg: message, group_chat_id: int) -> Data:
+def join_new_group(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
 
-    #if group_chat_id not in group_whitelist:
-    #    bot.send_message(msg.from_user.id, Strings.group_not_allowed(msg.chat.id))
-    #    return data_obj
+    if group_chat_id not in group_whitelist:
+        bot.send_message(msg.from_user.id, Strings.group_not_allowed(msg.chat.id))
+        return data_obj
 
     if group_chat_id not in data_obj.groups.keys():
         group_user = GroupUserAccount(userid=msg.from_user.id, username=data_obj.users[msg.from_user.id].calling_name)
