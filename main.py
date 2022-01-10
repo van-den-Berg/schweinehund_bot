@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os.path
+from pprint import pprint
 from typing import List
 
 import telebot  # importing pyTelegramBotAPI library
@@ -26,7 +27,7 @@ with open(config_json_path) as rf:
 
 bot = telebot.TeleBot(token=config_dict["tel_api_token"])
 mocking: bool = bool(config_dict["mocking"])
-data_json_path = config_dict["mocking_data_json_path"] if mocking else config_dict["data_json_path"]
+data_json_path = config_dict["mock_data_json_path"] if mocking else config_dict["data_json_path"]
 group_whitelist_path = config_dict["group_whitelist_path"]
 
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
@@ -57,7 +58,14 @@ def print_user_id(msg: message):
 
 @bot.message_handler(commands=['register'])
 def register(msg: message):
-    # TODO: es meckert, da: "shadows name from outer scope"
+    # TODO: es meckert, da: "shadows name from outer scope".
+    #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen wenn wir dinge umbenennen,
+    #  dass wir das im local namespace machen, aber denke nicht, das wir data_obj nochmal umbenennen und
+    #  selbst wenn wäre es kein Problem weil es überall das gleiche Objekt ist (es sagt immer das gleiche aus).
+    #  Aber hast schon recht, schön ist das nicht. Am Liebsten würde ich eine Klasse machen und das als Objektvariable haben,
+    #  aber hab das mit den @bot... decorators nicht hinbekommen (hab gestern ne Stunde probiert und dann zurück gedreht).
+    #  ich kann bei Gelegenheit nochmal Niklas fragen was
+    #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
     print(msg)
     if get_sender_id(msg) in data_obj.users.keys():  # User already registered
@@ -65,12 +73,14 @@ def register(msg: message):
             bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
             return
         else:  # user wants to join new group
-            data_obj = join_new_group(msg=msg, group_chat_id=msg.chat.id)
+            print('user wants to join new group')
+            data_obj = join_new_group(msg=msg, group_chat_id=str(msg.chat.id))  # group chat id is private id.
 
     else:  # User registers for the first time
+        print('user registers for the first time')
         try:
             echo = bot.send_message(msg.from_user.id, Strings.Registration.welcome_text)
-            bot.register_next_step_handler(message=echo, callback=register_user, group_chat_id=msg.chat.id)
+            bot.register_next_step_handler(message=echo, callback=register_user, group_chat_id=str(msg.chat.id))
         except:
             bot.send_message(msg.chat.id, Strings.Registration.first_need_to_open_chat)
 
@@ -79,7 +89,8 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
     if group_chat_id not in group_whitelist:
-        bot.send_message(msg.from_user.id, Strings.group_not_allowed(msg.chat.id))
+        print(group_chat_id, group_whitelist)
+        bot.send_message(msg.from_user.id, Strings.group_not_allowed(group_chat_id))
         return data_obj
 
     if group_chat_id not in data_obj.groups.keys():
@@ -104,7 +115,7 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
 
 def register_user(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
-    tel_username: str = ' '.join((msg.from_user.first_name, msg.from_user.last_name + ':', msg.from_user.username))
+    tel_username: str = ' '.join((str(msg.from_user.first_name), str(msg.from_user.last_name) + ':', str(msg.from_user.username)))
     new_user: User = User(user_id=str(msg.from_user.id), tel_username=tel_username, chosen_name=msg.text,
                           private_chat_id=msg.chat.id, active_groups={group_chat_id})
     data_obj.users[str(msg.from_user.id)] = new_user

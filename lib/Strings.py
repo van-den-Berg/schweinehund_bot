@@ -11,7 +11,7 @@ def registration_succesfull_group(name: str) -> str:
     return "Woop Woop! Begrüßt " + name + " im Team!!"
 
 
-def group_not_allowed(group_id: int):
+def group_not_allowed(group_id: str):
     return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
 
 
