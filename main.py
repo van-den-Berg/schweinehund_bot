@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import os.path
-from pprint import pprint
 from typing import List
 
 import telebot  # importing pyTelegramBotAPI library
@@ -67,9 +66,9 @@ def register(msg: message):
     #  ich kann bei Gelegenheit nochmal Niklas fragen was
     #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
-    print(msg)
+    #print(msg)
     if get_sender_id(msg) in data_obj.users.keys():  # User already registered
-        if msg.from_user.id in data_obj.users[msg.from_user.id].active_groups:  # User already registered
+        if str(msg.from_user.id) in data_obj.users[str(msg.from_user.id)].active_groups:  # User already registered
             bot.send_message(msg.from_user.id, Strings.Registration.already_registered)
             return
         else:  # user wants to join new group
@@ -89,24 +88,24 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
 
     if group_chat_id not in group_whitelist:
-        print(group_chat_id, group_whitelist)
+        #print(group_chat_id, group_whitelist)
         bot.send_message(msg.from_user.id, Strings.group_not_allowed(group_chat_id))
         return data_obj
 
     if group_chat_id not in data_obj.groups.keys():
-        group_user = GroupUserAccount(userid=msg.from_user.id, chosen_name=data_obj.users[msg.from_user.id].chosen_name)
+        group_user = GroupUserAccount(userid=str(msg.from_user.id), chosen_name=data_obj.users[str(msg.from_user.id)].chosen_name)
 
         data_obj.add_group(
-            Group(group_id=group_chat_id, active_users={msg.from_user.id}, all_users={msg.from_user.id},
-                  user_accounts={msg.from_user.id: group_user}, habit_tracking=[]))
-        data_obj.user_join_group(user_id=msg.from_user.id, group_id=group_chat_id)
+            Group(group_id=group_chat_id, active_users={str(msg.from_user.id)}, all_users={str(msg.from_user.id)},
+                  user_accounts={str(msg.from_user.id): group_user}, habit_tracking=[]))
+        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id))
 
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
         return data_obj
 
     else:
-        data_obj.user_join_group(user_id=msg.from_user.id, group_id=group_chat_id)
+        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id))
 
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
@@ -117,7 +116,7 @@ def register_user(msg: message, group_chat_id: str) -> Data:
     data_obj: Data = FileServices.read_json(data_json_path)
     tel_username: str = ' '.join((str(msg.from_user.first_name), str(msg.from_user.last_name) + ':', str(msg.from_user.username)))
     new_user: User = User(user_id=str(msg.from_user.id), tel_username=tel_username, chosen_name=msg.text,
-                          private_chat_id=msg.chat.id, active_groups={group_chat_id})
+                          private_chat_id=str(msg.chat.id), active_groups={group_chat_id})
     data_obj.users[str(msg.from_user.id)] = new_user
 
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
