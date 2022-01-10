@@ -1,7 +1,7 @@
 from telegram import message
 
 
-def get_sender_id(my_message: message) -> int:
+def get_sender_id(my_message: message) -> str:
     return my_message.from_user.id
 
 

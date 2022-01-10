@@ -46,10 +46,11 @@ class Data:
 
     # TODO: need testing
     # returning True if succeeded
-    def user_join_group(self, user_id: str, group_id: str) -> bool:
+    def user_join_group(self, user_id: str, group_id: str, chosen_username: str) -> bool:
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):
-            self.groups[group_id].all_users.add(user_id)
-            self.groups[group_id].active_users.add(user_id)
+            user: User = self.users[user_id]
+            group_user_account: GroupUserAccount = GroupUserAccount(id=user_id, calling_name=chosen_username)
+            self.groups[group_id].add_user_account_active(group_user_account)
             self.users[user_id].active_groups.add(group_id)
             return True
         return False
