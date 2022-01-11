@@ -90,15 +90,15 @@ def join_new_group(msg: message, group_chat_id: str) -> Data:
         bot.send_message(msg.from_user.id, Strings.group_not_allowed(group_chat_id))
         return data_obj
     if group_chat_id not in data_obj.groups.keys():
-        group_user = GroupUserAccount(id=msg.from_user.id, calling_name=)
+        group_user = GroupUserAccount(id=msg.from_user.id, calling_name=msg.text)
         data_obj.add_group(
             Group(group_id=group_chat_id, active_users={str(msg.from_user.id)}, all_users={str(msg.from_user.id)},
                   user_accounts={str(msg.from_user.id): group_user}, habit_tracking=[]))
-        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id))
+        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id), chosen_username=msg.text)
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
         return data_obj
     else:
-        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id))
+        data_obj.user_join_group(user_id=str(msg.from_user.id), group_id=str(group_chat_id), chosen_username=msg.text)
         FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
         return data_obj
 

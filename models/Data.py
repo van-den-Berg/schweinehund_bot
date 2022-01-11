@@ -14,7 +14,7 @@ class Data:
     groups: Dict[str, Group]
 
     def add_user(self, new_user: User):
-        self.users[new_user.user_id] = new_user
+        self.users[new_user.id] = new_user
 
     ## TODO: read this
     # I don't think we need this one can just use data_object.users[user_id]
