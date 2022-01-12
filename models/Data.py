@@ -50,7 +50,7 @@ class Data:
     def user_join_group(self, user_id: str, group_id: str, chosen_username: str) -> bool:
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):
             user: User = self.users[user_id]
-            group_user_account: GroupUserAccount = GroupUserAccount(user_id=user_id, calling_name=chosen_username)
+            group_user_account: GroupUserAccount = GroupUserAccount(user_id=user_id, chosen_name=chosen_username)
             self.groups[group_id].add_user_account_active(group_user_account)
             self.users[user_id].active_groups.add(group_id)
             return True
