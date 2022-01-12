@@ -17,8 +17,14 @@ def registration_succesfull_group(name: str) -> str:
     return "Woop Woop! Begrüßt " + name + " im Team!!"
 
 
-def group_not_allowed(group_id: str):
-    return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
+class Errors:
+    this_command_only_in_groups: str = "Dieser Command funktioniert nur in Gruppen."
+
+    group_not_registered: str = "Das Habit-Tracking wurde in dieser Gruppe noch nicht aktiviert. Aktiviere es mit dem command '/registerGroup'."
+
+    def group_not_allowed(group_id: str):
+        return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
+
 
 
 def init_no_data_at_location(path: str):
@@ -37,6 +43,13 @@ class Registration:
                               "Gehe dazu auf mein Profil und beginne einen Chat. " \
                               "Anschließend kannst du hierher zurückkommen und dich registrieren."
     already_registered = "Du bist bereits mit im Team!"
+
+    class GroupRegistration:
+        welcome_text = "Das Habit-Tracking für diese Gruppe wurde erfolgreich initialisiert. \n\nNutzer dieser Gruppe können nun mit '/join' am Habit-Tracking teilnehmen."
+        already_registered = "Eure Gruppe nimmt bereits am Habit-Tracking teil. Nutzer dieser Gruppe können dem Tracking beitreten, indem sie '/join' in den Chat schreiben."
+
+        def group_not_allowed(group_id: str):
+            return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
 
 
 @dataclasses.dataclass
@@ -60,7 +73,7 @@ class HabitStrings:
              "Du stehst im Telefonbuch unter T wie Tier ;-)",
              "HIT me baby, one more time!", "Sag mal weinst du oder ist das Schweiß der da von deiner Nase tropft?",
              "Run Forrest, Run!", "Komm, 5 schaffst du noch!"
-             "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
+                                  "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
              "I've failed over and over again in my life. And that is why I succeed. – Michael Jordan",
              "The only way to prove you are a good sport is to lose. – Ernie Banks",
              "There may be people that have more talent than you, but there's no excuse for anyone to work harder than you do. – Derek Jeter",
@@ -73,7 +86,8 @@ class HabitStrings:
              "There are no shortcuts to any place worth going. – Beverly Sills",
              "Kleine Idee für die nächste Sportsession: https://de.wikipedia.org/wiki/Roland_der_Furzer",
              "Dafür hast du dir ein Zuckerbonbon verdient. - Willst du ne Globoli?",
-             "It's getting hot in here so take of all your clothes ;-)", "Schüttel dein Speck, schüttel dein Speck, baaaaa, bum badum badumdum..."]
+             "It's getting hot in here so take of all your clothes ;-)",
+             "Schüttel dein Speck, schüttel dein Speck, baaaaa, bum badum badumdum..."]
 
     evening = ["Super und jetzt sei glücklich!",
                "Ich bin zwar nur ne Blechdose, aber immer für dich da wenn du mich brauchst. Wenn ich dir nicht antworte sag bitte Tim oder Paul Bescheid.",

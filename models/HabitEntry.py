@@ -1,4 +1,6 @@
 import dataclasses
+import datetime
+import time
 
 from models.Activity import Activity
 
@@ -7,4 +9,9 @@ from models.Activity import Activity
 class HabitEntry:
     user_id: str
     activity: Activity
-    date: str  # isoformated datetime. has to be a string in order to be serializable for JSON
+    date: str # isoformated datetime. has to be a string in order to be serializable for JSON
+
+    def __init__(self, user_id: str, activity: Activity, date: str = str(time.time())):
+        self.user_id = user_id
+        self.activity = activity
+        self.date = date
