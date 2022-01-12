@@ -4,10 +4,13 @@ import portalocker
 import jsonpickle as jsonpickle
 
 from models import Data
+from models.Group import Group
+from models.HabitEntry import HabitEntry
+from models.User import GroupUserAccount, User
 
 
 def read_json(file_path: str) -> Data.Data:
-    classes_for_decoding = (Data.HabitEntry, Data.GroupUserAccount, Data.Group, Data.User, Data.Data)
+    classes_for_decoding = (HabitEntry, Group, GroupUserAccount, User, Data.Data)
     with open(file_path, 'r') as read_file:
         portalocker.lock(read_file, portalocker.LOCK_EX)
         json_obj: Data.Data = jsonpickle.decode(read_file.read(), classes=classes_for_decoding)
