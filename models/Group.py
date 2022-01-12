@@ -14,6 +14,14 @@ class Group:
     habit_tracking: List[HabitEntry]
     money_pool: int = 0
 
+    def __init__(self, group_id: str):
+        self.group_id = group_id
+        self.active_users = set()
+        self.all_users = set()
+        self.user_accounts = dict()
+        self.habit_tracking = list()
+        self.money_pool = 0
+
     def add_habit_entry(self, new_habit_entry: HabitEntry):
         self.habit_tracking.append(new_habit_entry)
 
