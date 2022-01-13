@@ -24,6 +24,8 @@ def save_json_overwrite(json_data, file_path: str):
         write_file.write(jsonpickle.encode(json_data))
         portalocker.unlock(write_file)
 
+def data_to_str(data_obj: Data) -> str:
+    return jsonpickle.encode(data_obj)
 
 def read_group_whitelist(file_path: str) -> List[str]:
     with open(file_path) as rf:
