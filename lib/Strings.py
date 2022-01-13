@@ -2,6 +2,7 @@ import dataclasses
 import random
 
 from models.Activity import Activity
+from models.Group import Group
 
 
 class Help:
@@ -19,6 +20,11 @@ def registration_succesfull_group(name: str) -> str:
 
 class Errors:
     this_command_only_in_groups: str = "Dieser Command funktioniert nur in Gruppen."
+    this_command_only_in_private_chat: str = "Dieser Command funktioniert nur im privaten Chat."
+
+    user_not_registered_at_all: str = "Du bist leider in keiner Gruppe aktiv. Trete dem Habit-Tracking bei, indem du /join im Gruppenchat sendest."
+    user_not_in_this_group: str = "Du nimmst zur Zeit nicht aktiv am Habit-Tracking dieser Gruppe teil. Um mitzumachen sende '/join' in diesen Chat."
+    user_not_active_in_this_group: str = "Du hast das Habit Tracking in dieser Gruppe pausiert. Um den anderen wieder zu zeigen, wo der Hammer hängt, sende '/join'!"
 
     group_not_registered: str = "Das Habit-Tracking wurde in dieser Gruppe noch nicht aktiviert. Aktiviere es mit dem command '/registerGroup'."
 
@@ -55,17 +61,25 @@ class Registration:
 @dataclasses.dataclass
 class HabitStrings:
 
-    def get_habit_response(self, activity: Activity):
+    def added_to_groups(activity:Activity, group_ids: set[str], groups: dict[str, Group]):
+        ret_str = "Added the Activity {} to the following groups:".format(activity)
+        for group_id in group_ids:
+            group_name: str = groups[group_id].group_name
+            ret_str += "{},\n".format(group_name)
+
+    def get_habit_response(activity: Activity):
         if activity == Activity.SPORT:
-            return random.choice(self.sport)
+            return random.choice(HabitStrings.sport)
         if activity == Activity.GOOD_EVENING:
-            return random.choice(self.evening)
+            return random.choice(HabitStrings.evening)
         if activity == Activity.WENT_OUTSIDE:
-            return random.choice(self.outside)
+            return random.choice(HabitStrings.outside)
         if activity == Activity.NO_MEDIA_DURING_WORK or activity == Activity.PRODUCTIVE_BY_10:
-            return random.choice(self.productive)
+            return random.choice(HabitStrings.productive)
 
     sport = ["Nice, wir sind alle stolz auf dich!", "Wow, du bist ne krasse Sportskanone:-)",
+             "Du zeigst uns allen wo der Hammer hängt!",
+             "Das ballert!",
              "Cool dass du dich aufraffen konntest!",
              "Fühlst du wie gut dir der Sport getan hat?", "Krasser Bizeps!",
              "Entschuldigung können Sie mir sagen wo es zum Strand geht?",

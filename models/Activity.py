@@ -2,8 +2,8 @@ from enum import Enum, auto
 
 
 class Activity(Enum):
-    SPORT = auto()
-    GOOD_EVENING = auto()
-    WENT_OUTSIDE = auto
-    PRODUCTIVE_BY_10 = auto
-    NO_MEDIA_DURING_WORK = auto
+    SPORT = 1
+    GOOD_EVENING = 2
+    WENT_OUTSIDE = 3
+    PRODUCTIVE_BY_10 = 4
+    NO_MEDIA_DURING_WORK = 5

@@ -76,6 +76,11 @@ def print_user_id(msg: message):
     print("[/printUserId]")
     bot.send_message(chat_id=msg.chat.id, text=str(get_sender_id(msg)))
 
+@bot.message_handler(commands=['printData']) #prints the data_obj
+def print_data(msg:message):
+    print("[/printData]")
+    bot.send_message(msg.chat.id, FileServices.data_to_str(data_obj))
+
 
 @bot.message_handler(commands=['registerGroup'])
 def register_group(msg: message):
@@ -85,7 +90,8 @@ def register_group(msg: message):
         print("- Group {} is on Whitelist.".format(group_id))
         if group_id not in data_obj.groups.keys():
             print("-- not already registered.")
-            data_obj.add_group(Group(group_id))
+            group_name = msg.chat.title
+            data_obj.add_group(Group(group_id, group_name))
             bot.send_message(group_id, Strings.Registration.GroupRegistration.welcome_text)
             FileServices.save_json_overwrite(data_obj, data_json_path)
             print("--- Group {} successfully registered for habit tracking.\n")
@@ -154,27 +160,57 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
+# Dieser Command-Block kann ganz einfach auch für die anderen Activity Commands erweitert werden.
+# TODO: Nur ein Eintrag je Tag erlauben.
 @bot.message_handler(commands=['sport'])
 def add_habit_entry_sport(msg: message):
     print("[/sport]")
-    user_id = str(msg.from_user.id)
+    user_id = MessageServices.get_sender_id(msg)
+    priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
     group_id = str(msg.chat.id)
 
     # check if user has a user account
-    # if user_id not in data_obj.users:
-    #    bot.send_message()
+    if user_id not in data_obj.users:
+        print("-- User {} has no user Account.".format(user_id))
+        bot.send_message(group_id, Strings.Errors.user_not_registered_at_all)
+        return
 
     # if send in group: add to group
     # check if group is existent and user is in group
-    if chatType == 'group':
+    # check if user is active in the group.
+    if MessageServices.is_group_message(msg, bot):
         if group_id in data_obj.groups and user_id in data_obj.users:
-            data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=Activity.SPORT))
-            FileServices.save_json_overwrite(data_obj, data_json_path)
-            print("---saved entry")
+            if user_id in data_obj.groups[group_id].active_users:
+                data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=Activity.SPORT))
+                FileServices.save_json_overwrite(data_obj, data_json_path)
+                print("--- saved Sport entry for today in group {}".format(group_id))
+                ret_str = Strings.HabitStrings.get_habit_response(activity=Activity.SPORT)
+                print("--- Return Message: {}".format(ret_str))
+                bot.send_message(group_id, ret_str)
+                return
+            elif user_id in data_obj.groups[group_id].all_users:
+                print("--- User {} is not active in this group {}. But he was active some time ago.".format(user_id,
+                                                                                                            group_id))
+                bot.send_message(group_id, Strings.Errors.user_not_active_in_this_group)
+                return
+            else:
+                print("--- User {} has not joined the group {} yet.".format(user_id, group_id))
+                bot.send_message(group_id, Strings.Errors.user_not_in_this_group)
+                return
 
     # if send in private chat: add to all groups that are active in user account
-    # check if user is in group
+    if MessageServices.is_private_message(msg, bot):
+        for group_id in data_obj.users[user_id].active_groups:
+            data_obj.add_habit_entry(HabitEntry(user_id, Activity.SPORT))
+            print("---saved Sport entry for today in group {}".format(group_id))
+        FileServices.save_json_overwrite(data_obj, data_json_path)
+        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=Activity.SPORT))
+        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=Activity.SPORT,
+                                                                            group_ids=data_obj.users[
+                                                                                user_id].active_groups,
+                                                                            groups=data_obj.groups))
+        return
 
 
 def main_loop():
