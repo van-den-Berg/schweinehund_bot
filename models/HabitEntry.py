@@ -15,3 +15,8 @@ class HabitEntry:
         self.user_id = user_id
         self.activity = activity
         self.date = date
+
+    # TODO: get datetime.date object from the millis date string
+    def get_date(self) -> datetime.date:
+        ret_date : datetime.date
+        return ret_date

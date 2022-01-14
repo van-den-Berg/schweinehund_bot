@@ -7,3 +7,4 @@ class Activity(Enum):
     WENT_OUTSIDE = 3
     PRODUCTIVE_BY_10 = 4
     NO_MEDIA_DURING_WORK = 5
+    DEFAULT = -1

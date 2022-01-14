@@ -24,10 +24,12 @@ class Data:
     def remove_user(self, user_id: str):
         self.users.pop(user_id)
 
-    def add_habit_entry(self, new_habit_entry: HabitEntry):
+    def add_habit_entry(self, new_habit_entry: HabitEntry) -> bool:
         for group_id in self.users[new_habit_entry.user_id].active_groups:
-            print("user {} added Habit entry {} to group {}".format(new_habit_entry.user_id, new_habit_entry.activity, group_id))
-            self.groups[group_id].add_habit_entry(new_habit_entry)
+            success: bool = self.groups[group_id].add_habit_entry(new_habit_entry)
+            if success: print("-Data_obj: user {} added Habit entry {} to group {}".format(new_habit_entry.user_id, new_habit_entry.activity, group_id))
+            return success
+        return False
 
     # TODO: needs testing
     def add_group(self, new_group: Group):

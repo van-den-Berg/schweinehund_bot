@@ -61,13 +61,18 @@ class Registration:
 @dataclasses.dataclass
 class HabitStrings:
 
-    def added_to_groups(activity:Activity, group_ids: set[str], groups: dict[str, Group]):
-        ret_str = "Added the Activity {} to the following groups:".format(activity)
+    def added_to_groups(activity:Activity, group_ids: set[str], groups: dict[str, Group]) -> str:
+        ret_str = "Die Aktivität {} wurde erfolgreich in folgenden Gruppen hinzuefügt:\n".format(activity)
         for group_id in group_ids:
             group_name: str = groups[group_id].group_name
             ret_str += "{},\n".format(group_name)
+        return ret_str
 
-    def get_habit_response(activity: Activity):
+    def activity_already_logged_for_today(activity:Activity, group: Group) -> str:
+        ret_str= "Die Aktivität {} ist für den angegebene Tag bereits in Gruppe {} eingetragen und wird nicht noch einmal gespeichert.".format(activity.name, group.group_name)
+        return ret_str
+
+    def get_habit_response(activity: Activity) -> str:
         if activity == Activity.SPORT:
             return random.choice(HabitStrings.sport)
         if activity == Activity.GOOD_EVENING:

@@ -1,6 +1,7 @@
 import dataclasses
 from typing import Set, Dict, List
 
+from models.Activity import Activity
 from models.HabitEntry import HabitEntry
 from models.User import GroupUserAccount
 
@@ -24,8 +25,19 @@ class Group:
         self.habit_tracking = list()
         self.money_pool = 0
 
-    def add_habit_entry(self, new_habit_entry: HabitEntry):
-        self.habit_tracking.append(new_habit_entry)
+    def add_habit_entry(self, new_habit_entry: HabitEntry) -> bool:
+        # check if the user already submitted the activity on the same day.
+        # 1. get all the habits of the selected activity
+        # 2. check if they are on a different day.
+        invalid:bool = False
+        new_activity: Activity = new_habit_entry.activity
+        new_date = new_habit_entry.date
+        for habit_entry in self.habit_tracking:
+            if habit_entry.activity == new_activity:
+                if habit_entry.get_date() != new_habit_entry.get_date():
+                    self.habit_tracking.append(new_habit_entry)
+                    return True
+        return False
 
     def add_user_account_active(self, new_user: GroupUserAccount):
         if new_user.user_id not in self.user_accounts.keys():

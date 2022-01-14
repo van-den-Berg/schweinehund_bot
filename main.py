@@ -162,9 +162,19 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
 
 # Dieser Command-Block kann ganz einfach auch für die anderen Activity Commands erweitert werden.
 # TODO: Nur ein Eintrag je Tag erlauben.
-@bot.message_handler(commands=['sport'])
+# TODO: Comand für alle Activities erweitern. -> Text nur auf "contains" prüfen. Andere Commands hinzufügen.
+@bot.message_handler(commands=['sport', 'produktiv'])
 def add_habit_entry_sport(msg: message):
-    print("[/sport]")
+    # selecting the activity on what Activity did the user commit?
+    activity: Activity = Activity.DEFAULT
+    msg_text = msg.text
+    if msg_text == "/sport":
+        print("[/sport]")
+        activity = Activity.SPORT
+    elif msg_text == "/produktiv":
+        print("[/produktiv]")
+        activity = Activity.PRODUCTIVE_BY_10
+
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
@@ -182,13 +192,17 @@ def add_habit_entry_sport(msg: message):
     if MessageServices.is_group_message(msg, bot):
         if group_id in data_obj.groups and user_id in data_obj.users:
             if user_id in data_obj.groups[group_id].active_users:
-                data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=Activity.SPORT))
-                FileServices.save_json_overwrite(data_obj, data_json_path)
-                print("--- saved Sport entry for today in group {}".format(group_id))
-                ret_str = Strings.HabitStrings.get_habit_response(activity=Activity.SPORT)
-                print("--- Return Message: {}".format(ret_str))
-                bot.send_message(group_id, ret_str)
-                return
+                success = data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=activity))
+                if success:
+                    FileServices.save_json_overwrite(data_obj, data_json_path)
+                    print("--- saved {} entry for today in group {}".format(activity.name, group_id))
+                    ret_str = Strings.HabitStrings.get_habit_response(activity=activity)
+                    print("--- Return Message: {}".format(ret_str))
+                    bot.send_message(group_id, ret_str)
+                    return
+                else:
+                    print("--- Could not save activity {} for today in group {}. Activity for today already present.")
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
             elif user_id in data_obj.groups[group_id].all_users:
                 print("--- User {} is not active in this group {}. But he was active some time ago.".format(user_id,
                                                                                                             group_id))
@@ -202,11 +216,11 @@ def add_habit_entry_sport(msg: message):
     # if send in private chat: add to all groups that are active in user account
     if MessageServices.is_private_message(msg, bot):
         for group_id in data_obj.users[user_id].active_groups:
-            data_obj.add_habit_entry(HabitEntry(user_id, Activity.SPORT))
+            data_obj.add_habit_entry(HabitEntry(user_id, activity))
             print("---saved Sport entry for today in group {}".format(group_id))
         FileServices.save_json_overwrite(data_obj, data_json_path)
-        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=Activity.SPORT))
-        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=Activity.SPORT,
+        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
+        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity,
                                                                             group_ids=data_obj.users[
                                                                                 user_id].active_groups,
                                                                             groups=data_obj.groups))
