@@ -41,9 +41,9 @@ def group_is_whitelisted(msg: message, whitelist, bot: TeleBot) -> bool:
     group_id: str = get_group_id(msg)
     ret = group_id in whitelist
     if ret:
-        print("- Group {} is Whitelisted.".format(group_id))
+        print(f"- Group {group_id} is Whitelisted.")
     else:
-        print("- Group {} is NOT Whitelisted.".format(group_id))
+        print(f"- Group {group_id} is NOT Whitelisted.")
         bot.send_message(group_id, Strings.Registration.GroupRegistration.group_not_allowed(msg.chat.id))
     return ret
 
@@ -52,9 +52,9 @@ def group_is_registered(msg: message, data_obj: Data, bot: TeleBot) -> bool:
     group_id = get_group_id(msg)
     ret = group_id in data_obj.groups
     if ret:
-        print("- Group {} is registered.".format(group_id))
+        print(f"- Group {group_id} is registered.")
     else:
-        print("- Group {} is not registered.".format(group_id))
+        print(f"- Group {group_id} is not registered.")
         bot.send_message(group_id, Strings.Errors.group_not_registered)
     return ret
 

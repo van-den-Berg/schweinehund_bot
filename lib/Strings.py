@@ -1,21 +1,29 @@
 import dataclasses
 import random
 
+from typing import Set, Dict
+
 from models.Activity import Activity
 from models.Group import Group
 
 
 class Help:
     help_text = "this is a dummy text for the help section"
-    avail_commands = "die folgenden Commands sind verfügbar: ..."
+    avail_commands = "die folgenden Commands sind verfügbar: \n" \
+                     "\t /join \tum der habbit tracking Funktion beizutreten\n" \
+                     "\t /sport \twenn man sport gemacht hat\n" \
+                     "\t /produktiv \twenn man seine Arbeitszeiten eingehalten hat\n" \
+                     "\t /medienfrei \twenn man während der Arbeitszeiten keine unnötigen Medien konsumiert hat" \
+                     "\t /rausgegangen \twenn man an dem Tag draußen unterwegs war" \
+                     "\t /guterabend \twenn man an dem Abend nicht versackt ist"
 
 
 def registration_succesfull_private(name: str) -> str:
-    return "Hallo und Willkommen " + name + ", wir freuen uns dass du hier bist!"
+    return f"Hallo und Willkommen {name}, wir freuen uns dass du hier bist!"
 
 
 def registration_succesfull_group(name: str) -> str:
-    return "Woop Woop! Begrüßt " + name + " im Team!!"
+    return f"Woop Woop! Begrüßt {name} im Team!!"
 
 
 class Errors:
@@ -32,12 +40,11 @@ class Errors:
         return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
 
 
-
 def init_no_data_at_location(path: str):
-    return "There is no file at provided path \n " \
-           "'data_json_path': '{}'. \n " \
-           "A empty file for storing the data will be generated. \n " \
-           "If there should be a file with valid data, please check the config.json".format(path)
+    return f"There is no file at provided path \n " \
+           f"'data_json_path': '{path}'. \n " \
+           f"An empty file for storing the data will be generated. \n " \
+           f"If there should be a file with valid data, please check/change the config.json file."
 
 
 class Registration:
@@ -61,15 +68,16 @@ class Registration:
 @dataclasses.dataclass
 class HabitStrings:
 
-    def added_to_groups(activity:Activity, group_ids: set[str], groups: dict[str, Group]) -> str:
-        ret_str = "Die Aktivität {} wurde erfolgreich in folgenden Gruppen hinzuefügt:\n".format(activity)
+    def added_to_groups(activity: Activity, group_ids: Set[str], groups: Dict[str, Group]) -> str:
+        ret_str = f"Die Aktivität {activity} wurde erfolgreich in folgenden Gruppen hinzuefügt:\n"
         for group_id in group_ids:
             group_name: str = groups[group_id].group_name
-            ret_str += "{},\n".format(group_name)
+            ret_str += f"{group_name},\n"
         return ret_str
 
-    def activity_already_logged_for_today(activity:Activity, group: Group) -> str:
-        ret_str= "Die Aktivität {} ist für den angegebene Tag bereits in Gruppe {} eingetragen und wird nicht noch einmal gespeichert.".format(activity.name, group.group_name)
+    def activity_already_logged_for_today(activity: Activity, group: Group) -> str:
+        ret_str = "Die Aktivität {} ist für den angegebene Tag bereits in Gruppe {} eingetragen und wird nicht noch einmal gespeichert.".format(
+            activity.name, group.group_name)
         return ret_str
 
     def get_habit_response(activity: Activity) -> str:

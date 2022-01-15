@@ -40,7 +40,7 @@ if not os.path.exists(data_json_path):
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 if not os.path.exists(group_whitelist_path):
     with open(group_whitelist_path, 'w') as x:
-        x.write('[]')
+        x.write('')
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
