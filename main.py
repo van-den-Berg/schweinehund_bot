@@ -32,14 +32,15 @@ data_json_path = config_dict["mock_data_json_path"] if mocking else config_dict[
 group_whitelist_path = config_dict["group_whitelist_path"]
 
 if not os.path.exists(data_json_path):
-    x = open(data_json_path, 'a')
-    x.write("{}")
-    x.close()
+    # the file should also be created with save_json_overwrite.
+    # with open(data_json_path, 'a') as x:
+    #    x.write("{}")
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 if not os.path.exists(group_whitelist_path):
-    open(group_whitelist_path, 'a').close()
+    with open(group_whitelist_path, 'w') as x:
+        x.write('[]')
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
@@ -77,18 +78,18 @@ def print_data(msg: message):
 @bot.message_handler(commands=['registerGroup'])
 def register_group(msg: message):
     group_id: str = str(msg.chat.id)
-    print("[/registerGroup] Group {} wants to register. Whitelisted Groups are: {}".format(group_id, group_whitelist))
+    print(f"[/registerGroup] Group {group_id} wants to register. Whitelisted Groups are: {group_whitelist}")
     if group_id in group_whitelist:
-        print("- Group {} is on Whitelist.".format(group_id))
+        print(f"- Group {group_id} is on Whitelist.")
         if group_id not in data_obj.groups.keys():
             print("-- not already registered.")
             group_name = msg.chat.title
             data_obj.add_group(Group(group_id, group_name))
             bot.send_message(group_id, Strings.Registration.GroupRegistration.welcome_text)
             FileServices.save_json_overwrite(data_obj, data_json_path)
-            print("--- Group {} successfully registered for habit tracking.\n")
+            print(f"--- Group {group_id} successfully registered for habit tracking.\n")
         else:
-            print("-- Group {} is already registered.".format(group_id))
+            print(f"-- Group {group_id} is already registered.")
             bot.send_message(group_id, Strings.Registration.GroupRegistration.already_registered)
     else:
         print("- Group is not on Whitelist")
@@ -109,8 +110,9 @@ def join(msg: message):
     #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
-    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot): return
-    print("user {} wants to join a group.".format(msg.from_user.id))
+    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
+        return
+    print(f"user {msg.from_user.id} wants to join a group.")
 
     # this command is only appliciable if send in a group chat.
     if msg.chat.type != "group":
@@ -183,7 +185,7 @@ def add_habit_entry(msg: message):
 
     # check if user has a user account
     if user_id not in data_obj.users:
-        print("-- User {} has no user Account.".format(user_id))
+        print(f"-- User {user_id} has no user Account.")
         bot.send_message(group_id, Strings.Errors.user_not_registered_at_all)
         return
 
@@ -196,23 +198,23 @@ def add_habit_entry(msg: message):
                 success = data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=activity))
                 if success:
                     FileServices.save_json_overwrite(data_obj, data_json_path)
-                    print("--- saved {} entry for today in group {}".format(activity.name, group_id))
+                    print(f"--- saved {activity.name} entry for today in group {group_id}")
                     ret_str = Strings.HabitStrings.get_habit_response(activity=activity)
-                    print("--- Return Message: {}".format(ret_str))
+                    print(f"--- Return Message: {ret_str}")
                     bot.send_message(group_id, ret_str)
                     return
                 else:
-                    print("--- Could not save activity {} for today in group {}. Activity for today already present.")
+                    print(
+                        f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
                     bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
                                                                                                       data_obj.groups[
                                                                                                           group_id]))
             elif user_id in data_obj.groups[group_id].all_users:
-                print("--- User {} is not active in this group {}. But he was active some time ago.".format(user_id,
-                                                                                                            group_id))
+                print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
                 bot.send_message(group_id, Strings.Errors.user_not_active_in_this_group)
                 return
             else:
-                print("--- User {} has not joined the group {} yet.".format(user_id, group_id))
+                print(f"--- User {user_id} has not joined the group {group_id} yet.")
                 bot.send_message(group_id, Strings.Errors.user_not_in_this_group)
                 return
 
@@ -220,7 +222,7 @@ def add_habit_entry(msg: message):
     if MessageServices.is_private_message(msg, bot):
         for group_id in data_obj.users[user_id].active_groups:
             data_obj.add_habit_entry(HabitEntry(user_id, activity))
-            print("---saved Sport entry for today in group {}".format(group_id))
+            print(f"---saved Sport entry for today in group {group_id}")
         FileServices.save_json_overwrite(data_obj, data_json_path)
         bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
         bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity,
