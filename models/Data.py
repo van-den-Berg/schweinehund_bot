@@ -27,7 +27,8 @@ class Data:
     def add_habit_entry(self, new_habit_entry: HabitEntry) -> bool:
         for group_id in self.users[new_habit_entry.user_id].active_groups:
             success: bool = self.groups[group_id].add_habit_entry(new_habit_entry)
-            if success: print("-Data_obj: user {} added Habit entry {} to group {}".format(new_habit_entry.user_id, new_habit_entry.activity, group_id))
+            if success:
+                print(f"-Data_obj: user {new_habit_entry.user_id} added Habit entry {new_habit_entry.activity} to group {group_id}")
             return success
         return False
 
