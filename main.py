@@ -40,7 +40,7 @@ if not os.path.exists(data_json_path):
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 if not os.path.exists(group_whitelist_path):
     with open(group_whitelist_path, 'w') as x:
-        x.write('[]')
+        x.write('')
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
@@ -110,6 +110,7 @@ def join(msg: message):
     #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
+
     if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
         return
     print(f"user {msg.from_user.id} wants to join a group.")
