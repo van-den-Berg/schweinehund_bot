@@ -76,8 +76,8 @@ class HabitStrings:
         return ret_str
 
     def activity_already_logged_for_today(activity: Activity, group: Group) -> str:
-        ret_str = "Die Aktivität {} ist für den angegebene Tag bereits in Gruppe {} eingetragen und wird nicht noch einmal gespeichert.".format(
-            activity.name, group.group_name)
+        ret_str = f"Das hättest du wohl gerne^^ {activity.name} ist für heute bereits in " \
+                  f"Gruppe {group.group_name} eingetragen und wird nicht noch einmal gespeichert. Nicht cheaten ;-)"
         return ret_str
 
     def get_habit_response(activity: Activity) -> str:
@@ -99,8 +99,8 @@ class HabitStrings:
              "Waschbrettbauch incomming!!!", "Komm und tanz mit mir einen kleinen Siegestanz!",
              "Du stehst im Telefonbuch unter T wie Tier ;-)",
              "HIT me baby, one more time!", "Sag mal weinst du oder ist das Schweiß der da von deiner Nase tropft?",
-             "Run Forrest, Run!", "Komm, 5 schaffst du noch!"
-                                  "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
+             "Run Forrest, Run!", "Komm, 5 schaffst du noch!",
+             "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
              "I've failed over and over again in my life. And that is why I succeed. – Michael Jordan",
              "The only way to prove you are a good sport is to lose. – Ernie Banks",
              "There may be people that have more talent than you, but there's no excuse for anyone to work harder than you do. – Derek Jeter",
@@ -128,6 +128,7 @@ class HabitStrings:
                "Tu dir mal was gutes. Und plane es vorher, denn die Vorfreude ist die halbe Miete.",
                "Hast du was gesagt? - Spaß, ist notiert ;-)",
                "Tim ist der Größte und Paul ist der Hammer!!!",
+               "Suche dir einen Spiegel und grinse 2 Minuten hinein! (Timer stellen!)",
                "Von wilden Blümlein die roten und Spechte sind Frühlingsboten.",
                "Antworte, sonst pflüge ich dich durch die Botanik, dass man dich für eine abgeknickte Tulpe hält. -Bud Spencer",
                "Chuck Norris isst keinen Honig, er kaut Bienen.", "Nahalla Maarsch! Oh sorry, ja ist notiert...",
@@ -178,4 +179,4 @@ class HabitStrings:
                   "Erfolg hat drei Buchstaben: TUN -Goethe",
                   "Das Gleiche lässt uns in Ruhe, aber der Widerspruch ist es, der uns produktiv macht. -Goethe",
                   "Krise ist ein produktiver Zustand. Mann muss ihm nur den Beigeschmack der Katastrophe nehmen. -Max Frisch",
-                  "-p/2 +- sqrt(( p/2 ^2) - q)", "Im Magen von Blauwalen sind 35 Bar"]
+                  "-p/2 +- sqrt(( p/2 ^2) - q)", "Im Magen von Blauwalen sind 35 Bar", "Sieben mal sieben ist feiner Sand."]

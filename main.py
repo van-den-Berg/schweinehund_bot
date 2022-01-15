@@ -101,14 +101,13 @@ def register_group(msg: message):
 @bot.message_handler(commands=['join'])
 def join(msg: message):
     print("[/join]")
-    # TODO: es meckert, da: "shadows name from outer scope".
-    #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen wenn wir dinge umbenennen,
+    #  es meckert, da: "shadows name from outer scope".
+    #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen, wenn wir dinge umbenennen,
     #  dass wir das im local namespace machen, aber denke nicht, das wir data_obj nochmal umbenennen und
-    #  selbst wenn wäre es kein Problem weil es überall das gleiche Objekt ist (es sagt immer das gleiche aus).
-    #  Aber hast schon recht, schön ist das nicht. Am Liebsten würde ich eine Klasse machen und das als Objektvariable haben,
+    #  selbst wenn wäre es kein Problem, weil es überall das gleiche Objekt ist (es sagt immer das gleiche aus).
+    #  Aber hast schon Recht, schön ist das nicht. Am Liebsten würde ich eine Klasse machen und das als Objektvariable haben,
     #  aber hab das mit den @bot... decorators nicht hinbekommen (hab gestern ne Stunde probiert und dann zurück gedreht).
-    #  ich kann bei Gelegenheit nochmal Niklas fragen was
-    #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
+
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
 
@@ -156,9 +155,6 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-# Dieser Command-Block kann ganz einfach auch für die anderen Activity Commands erweitert werden.
-# TODO: Nur ein Eintrag je Tag erlauben.
-# Done, I hope: Command für alle Activities erweitern. -> Text nur auf "contains" prüfen. Andere Commands hinzufügen.
 @bot.message_handler(commands=['sport', 'produktiv', 'medienfrei', 'rausgegangen', 'guterabend'])
 def add_habit_entry(msg: message):
     # selecting the activity on what Activity did the user commit?
@@ -206,11 +202,10 @@ def add_habit_entry(msg: message):
                     bot.send_message(group_id, ret_str)
                     return
                 else:
-                    print(
-                        f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
-                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
-                                                                                                      data_obj.groups[
-                                                                                                          group_id]))
+                    print(f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
+
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
+
             elif user_id in data_obj.groups[group_id].all_users:
                 print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
                 bot.send_message(group_id, Strings.Errors.user_not_active_in_this_group)
