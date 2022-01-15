@@ -154,18 +154,27 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
 
 # Dieser Command-Block kann ganz einfach auch für die anderen Activity Commands erweitert werden.
 # TODO: Nur ein Eintrag je Tag erlauben.
-# TODO: Comand für alle Activities erweitern. -> Text nur auf "contains" prüfen. Andere Commands hinzufügen.
-@bot.message_handler(commands=['sport', 'produktiv'])
-def add_habit_entry_sport(msg: message):
+# Done, I hope: Command für alle Activities erweitern. -> Text nur auf "contains" prüfen. Andere Commands hinzufügen.
+@bot.message_handler(commands=['sport', 'produktiv', 'medienfrei', 'rausgegangen', 'guterabend'])
+def add_habit_entry(msg: message):
     # selecting the activity on what Activity did the user commit?
     activity: Activity = Activity.DEFAULT
-    msg_text = msg.text
-    if msg_text == "/sport":
+    msg_text = str(msg.text).lower()
+    if "/sport" in msg_text:
         print("[/sport]")
         activity = Activity.SPORT
-    elif msg_text == "/produktiv":
+    elif "/produktiv" in msg_text:
         print("[/produktiv]")
         activity = Activity.PRODUCTIVE_BY_10
+    elif "/medienfrei" in msg_text:
+        print("[/medienfrei]")
+        activity = Activity.NO_MEDIA_DURING_WORK
+    elif "/rausgegangen" in msg_text:
+        print("[/rausgegangen]")
+        activity = Activity.WENT_OUTSIDE
+    elif "/guterabend" in msg_text:
+        print("[/guterabend]")
+        activity = Activity.GOOD_EVENING
 
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
