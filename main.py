@@ -32,37 +32,30 @@ data_json_path = config_dict["mock_data_json_path"] if mocking else config_dict[
 group_whitelist_path = config_dict["group_whitelist_path"]
 
 if not os.path.exists(data_json_path):
-    x = open(data_json_path, 'a')
-    x.write("{}")
-    x.close()
+    # the file should also be created with save_json_overwrite.
+    # with open(data_json_path, 'a') as x:
+    #    x.write("{}")
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    print("initializing data file, because the directory was empty.")
 if not os.path.exists(group_whitelist_path):
-    open(group_whitelist_path, 'a').close()
+    with open(group_whitelist_path, 'w') as x:
+        x.write('')
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
-# get data
 if mocking:  # create new instance of mocked data, overwrite the old one.
-    # data_obj = Mocking.mock_userdata(data_json_path)
-    # FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    data_obj = Mocking.mock_userdata(data_json_path)
+    FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
-    if os.path.isfile(data_json_path):
-        data_obj = FileServices.read_json(data_json_path)
-    else:
-        print(Strings.init_no_data_at_location(data_json_path))
-        data_obj = Data(users={}, groups={})
-        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
-
-
+# get data object, create if not existing.
+if os.path.isfile(data_json_path):
+    data_obj = FileServices.read_json(data_json_path)
 else:
-    if os.path.isfile(data_json_path):
-        data_obj = FileServices.read_json(data_json_path)
-    else:
-        print(Strings.init_no_data_at_location(data_json_path))
-        data_obj = Data(users={}, groups={})
-        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    print(Strings.init_no_data_at_location(data_json_path))
+    data_obj = Data(users={}, groups={})
+    FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
@@ -76,8 +69,9 @@ def print_user_id(msg: message):
     print("[/printUserId]")
     bot.send_message(chat_id=msg.chat.id, text=str(get_sender_id(msg)))
 
-@bot.message_handler(commands=['printData']) #prints the data_obj
-def print_data(msg:message):
+
+@bot.message_handler(commands=['printData'])  # prints the data_obj
+def print_data(msg: message):
     print("[/printData]")
     bot.send_message(msg.chat.id, FileServices.data_to_str(data_obj))
 
@@ -85,18 +79,18 @@ def print_data(msg:message):
 @bot.message_handler(commands=['registerGroup'])
 def register_group(msg: message):
     group_id: str = str(msg.chat.id)
-    print("[/registerGroup] Group {} wants to register. Whitelisted Groups are: {}".format(group_id, group_whitelist))
+    print(f"[/registerGroup] Group {group_id} wants to register. Whitelisted Groups are: {group_whitelist}")
     if group_id in group_whitelist:
-        print("- Group {} is on Whitelist.".format(group_id))
+        print(f"- Group {group_id} is on Whitelist.")
         if group_id not in data_obj.groups.keys():
             print("-- not already registered.")
             group_name = msg.chat.title
             data_obj.add_group(Group(group_id, group_name))
             bot.send_message(group_id, Strings.Registration.GroupRegistration.welcome_text)
             FileServices.save_json_overwrite(data_obj, data_json_path)
-            print("--- Group {} successfully registered for habit tracking.\n")
+            print(f"--- Group {group_id} successfully registered for habit tracking.\n")
         else:
-            print("-- Group {} is already registered.".format(group_id))
+            print(f"-- Group {group_id} is already registered.")
             bot.send_message(group_id, Strings.Registration.GroupRegistration.already_registered)
     else:
         print("- Group is not on Whitelist")
@@ -107,18 +101,19 @@ def register_group(msg: message):
 @bot.message_handler(commands=['join'])
 def join(msg: message):
     print("[/join]")
-    # TODO: es meckert, da: "shadows name from outer scope".
-    #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen wenn wir dinge umbenennen,
+    #  es meckert, da: "shadows name from outer scope".
+    #  =>>> in unserem Fall ist das meine ich egal. wir müssen halt aufpassen, wenn wir dinge umbenennen,
     #  dass wir das im local namespace machen, aber denke nicht, das wir data_obj nochmal umbenennen und
-    #  selbst wenn wäre es kein Problem weil es überall das gleiche Objekt ist (es sagt immer das gleiche aus).
-    #  Aber hast schon recht, schön ist das nicht. Am Liebsten würde ich eine Klasse machen und das als Objektvariable haben,
+    #  selbst wenn wäre es kein Problem, weil es überall das gleiche Objekt ist (es sagt immer das gleiche aus).
+    #  Aber hast schon Recht, schön ist das nicht. Am Liebsten würde ich eine Klasse machen und das als Objektvariable haben,
     #  aber hab das mit den @bot... decorators nicht hinbekommen (hab gestern ne Stunde probiert und dann zurück gedreht).
-    #  ich kann bei Gelegenheit nochmal Niklas fragen was
-    #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
+
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
-    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot): return
-    print("user {} wants to join a group.".format(msg.from_user.id))
+
+    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
+        return
+    print(f"user {msg.from_user.id} wants to join a group.")
 
     # this command is only appliciable if send in a group chat.
     if msg.chat.type != "group":
@@ -160,11 +155,27 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-# Dieser Command-Block kann ganz einfach auch für die anderen Activity Commands erweitert werden.
-# TODO: Nur ein Eintrag je Tag erlauben.
-@bot.message_handler(commands=['sport'])
-def add_habit_entry_sport(msg: message):
-    print("[/sport]")
+@bot.message_handler(commands=['sport', 'produktiv', 'medienfrei', 'rausgegangen', 'guterabend'])
+def add_habit_entry(msg: message):
+    # selecting the activity on what Activity did the user commit?
+    activity: Activity = Activity.DEFAULT
+    msg_text = str(msg.text).lower()
+    if "/sport" in msg_text:
+        print("[/sport]")
+        activity = Activity.SPORT
+    elif "/produktiv" in msg_text:
+        print("[/produktiv]")
+        activity = Activity.PRODUCTIVE_BY_10
+    elif "/medienfrei" in msg_text:
+        print("[/medienfrei]")
+        activity = Activity.NO_MEDIA_DURING_WORK
+    elif "/rausgegangen" in msg_text:
+        print("[/rausgegangen]")
+        activity = Activity.WENT_OUTSIDE
+    elif "/guterabend" in msg_text:
+        print("[/guterabend]")
+        activity = Activity.GOOD_EVENING
+
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
@@ -172,7 +183,7 @@ def add_habit_entry_sport(msg: message):
 
     # check if user has a user account
     if user_id not in data_obj.users:
-        print("-- User {} has no user Account.".format(user_id))
+        print(f"-- User {user_id} has no user Account.")
         bot.send_message(group_id, Strings.Errors.user_not_registered_at_all)
         return
 
@@ -182,31 +193,36 @@ def add_habit_entry_sport(msg: message):
     if MessageServices.is_group_message(msg, bot):
         if group_id in data_obj.groups and user_id in data_obj.users:
             if user_id in data_obj.groups[group_id].active_users:
-                data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=Activity.SPORT))
-                FileServices.save_json_overwrite(data_obj, data_json_path)
-                print("--- saved Sport entry for today in group {}".format(group_id))
-                ret_str = Strings.HabitStrings.get_habit_response(activity=Activity.SPORT)
-                print("--- Return Message: {}".format(ret_str))
-                bot.send_message(group_id, ret_str)
-                return
+                success = data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=activity))
+                if success:
+                    FileServices.save_json_overwrite(data_obj, data_json_path)
+                    print(f"--- saved {activity.name} entry for today in group {group_id}")
+                    ret_str = Strings.HabitStrings.get_habit_response(activity=activity)
+                    print(f"--- Return Message: {ret_str}")
+                    bot.send_message(group_id, ret_str)
+                    return
+                else:
+                    print(f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
+
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
+
             elif user_id in data_obj.groups[group_id].all_users:
-                print("--- User {} is not active in this group {}. But he was active some time ago.".format(user_id,
-                                                                                                            group_id))
+                print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
                 bot.send_message(group_id, Strings.Errors.user_not_active_in_this_group)
                 return
             else:
-                print("--- User {} has not joined the group {} yet.".format(user_id, group_id))
+                print(f"--- User {user_id} has not joined the group {group_id} yet.")
                 bot.send_message(group_id, Strings.Errors.user_not_in_this_group)
                 return
 
     # if send in private chat: add to all groups that are active in user account
     if MessageServices.is_private_message(msg, bot):
         for group_id in data_obj.users[user_id].active_groups:
-            data_obj.add_habit_entry(HabitEntry(user_id, Activity.SPORT))
-            print("---saved Sport entry for today in group {}".format(group_id))
+            data_obj.add_habit_entry(HabitEntry(user_id, activity))
+            print(f"---saved Sport entry for today in group {group_id}")
         FileServices.save_json_overwrite(data_obj, data_json_path)
-        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=Activity.SPORT))
-        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=Activity.SPORT,
+        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
+        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity,
                                                                             group_ids=data_obj.users[
                                                                                 user_id].active_groups,
                                                                             groups=data_obj.groups))

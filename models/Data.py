@@ -16,36 +16,28 @@ class Data:
     def add_user(self, new_user: User):
         self.users[new_user.user_id] = new_user
 
-    ## TODO: read this
-    # I don't think we need this one can just use data_object.users[user_id]
-    # def get_user(self, user_id: str) -> User:
-    #    return self.users[user_id]
-
     def remove_user(self, user_id: str):
         self.users.pop(user_id)
 
-    def add_habit_entry(self, new_habit_entry: HabitEntry):
+    def add_habit_entry(self, new_habit_entry: HabitEntry) -> bool:
         for group_id in self.users[new_habit_entry.user_id].active_groups:
-            print("user {} added Habit entry {} to group {}".format(new_habit_entry.user_id, new_habit_entry.activity, group_id))
-            self.groups[group_id].add_habit_entry(new_habit_entry)
+            success: bool = self.groups[group_id].add_habit_entry(new_habit_entry)
+            if success:
+                print(f"-Data_obj: user {new_habit_entry.user_id} added Habit entry {new_habit_entry.activity} to group {group_id}")
+            return success
+        return False
 
-    # TODO: needs testing
+    # needs testing
     def add_group(self, new_group: Group):
         if new_group.group_id in self.groups.keys():
-            # TODO: throw error: "group already exists"
-            # I think a print should suffice, otherwise the whole bot stops.
             print(f"The group with id {new_group.group_id} does already exist. It wasn't changed.")
         else:
             self.groups[new_group.group_id] = new_group
             for user_id in new_group.all_users:
                 self.users[user_id].active_groups.add(new_group.group_id)
 
-    # TODO: Read this
-    # I don't think we need this, see above
-    # def get_group(self, group_id: str) -> Group.py:
-    #    return self.groups[group_id]
 
-    # TODO: need testing
+    # need testing
     # returning True if succeeded
     def user_join_group(self, user_id: str, group_id: str, chosen_username: str) -> bool:
         if (user_id in self.users.keys()) and (group_id in self.groups.keys()):

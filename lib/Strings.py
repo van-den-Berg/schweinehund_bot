@@ -1,21 +1,29 @@
 import dataclasses
 import random
 
+from typing import Set, Dict
+
 from models.Activity import Activity
 from models.Group import Group
 
 
 class Help:
     help_text = "this is a dummy text for the help section"
-    avail_commands = "die folgenden Commands sind verfügbar: ..."
+    avail_commands = "die folgenden Commands sind verfügbar: \n" \
+                     "\t /join \tum der habbit tracking Funktion beizutreten\n" \
+                     "\t /sport \twenn man sport gemacht hat\n" \
+                     "\t /produktiv \twenn man seine Arbeitszeiten eingehalten hat\n" \
+                     "\t /medienfrei \twenn man während der Arbeitszeiten keine unnötigen Medien konsumiert hat" \
+                     "\t /rausgegangen \twenn man an dem Tag draußen unterwegs war" \
+                     "\t /guterabend \twenn man an dem Abend nicht versackt ist"
 
 
 def registration_succesfull_private(name: str) -> str:
-    return "Hallo und Willkommen " + name + ", wir freuen uns dass du hier bist!"
+    return f"Hallo und Willkommen {name}, wir freuen uns dass du hier bist!"
 
 
 def registration_succesfull_group(name: str) -> str:
-    return "Woop Woop! Begrüßt " + name + " im Team!!"
+    return f"Woop Woop! Begrüßt {name} im Team!!"
 
 
 class Errors:
@@ -32,12 +40,11 @@ class Errors:
         return f"Diese Gruppe steht nicht auf der whitelist. Bitte kontaktiere die Administratoren. Die fehlende GruppenID ist {group_id}."
 
 
-
 def init_no_data_at_location(path: str):
-    return "There is no file at provided path \n " \
-           "'data_json_path': '{}'. \n " \
-           "A empty file for storing the data will be generated. \n " \
-           "If there should be a file with valid data, please check the config.json".format(path)
+    return f"There is no file at provided path \n " \
+           f"'data_json_path': '{path}'. \n " \
+           f"An empty file for storing the data will be generated. \n " \
+           f"If there should be a file with valid data, please check/change the config.json file."
 
 
 class Registration:
@@ -61,13 +68,19 @@ class Registration:
 @dataclasses.dataclass
 class HabitStrings:
 
-    def added_to_groups(activity:Activity, group_ids: set[str], groups: dict[str, Group]):
-        ret_str = "Added the Activity {} to the following groups:".format(activity)
+    def added_to_groups(activity: Activity, group_ids: Set[str], groups: Dict[str, Group]) -> str:
+        ret_str = f"Die Aktivität {activity} wurde erfolgreich in folgenden Gruppen hinzuefügt:\n"
         for group_id in group_ids:
             group_name: str = groups[group_id].group_name
-            ret_str += "{},\n".format(group_name)
+            ret_str += f"{group_name},\n"
+        return ret_str
 
-    def get_habit_response(activity: Activity):
+    def activity_already_logged_for_today(activity: Activity, group: Group) -> str:
+        ret_str = f"Das hättest du wohl gerne^^ {activity.name} ist für heute bereits in " \
+                  f"Gruppe {group.group_name} eingetragen und wird nicht noch einmal gespeichert. Nicht cheaten ;-)"
+        return ret_str
+
+    def get_habit_response(activity: Activity) -> str:
         if activity == Activity.SPORT:
             return random.choice(HabitStrings.sport)
         if activity == Activity.GOOD_EVENING:
@@ -86,8 +99,8 @@ class HabitStrings:
              "Waschbrettbauch incomming!!!", "Komm und tanz mit mir einen kleinen Siegestanz!",
              "Du stehst im Telefonbuch unter T wie Tier ;-)",
              "HIT me baby, one more time!", "Sag mal weinst du oder ist das Schweiß der da von deiner Nase tropft?",
-             "Run Forrest, Run!", "Komm, 5 schaffst du noch!"
-                                  "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
+             "Run Forrest, Run!", "Komm, 5 schaffst du noch!",
+             "I don't count my situps. I only start counting once it starts hurting. - Muhammad Ali",
              "I've failed over and over again in my life. And that is why I succeed. – Michael Jordan",
              "The only way to prove you are a good sport is to lose. – Ernie Banks",
              "There may be people that have more talent than you, but there's no excuse for anyone to work harder than you do. – Derek Jeter",
@@ -115,6 +128,7 @@ class HabitStrings:
                "Tu dir mal was gutes. Und plane es vorher, denn die Vorfreude ist die halbe Miete.",
                "Hast du was gesagt? - Spaß, ist notiert ;-)",
                "Tim ist der Größte und Paul ist der Hammer!!!",
+               "Suche dir einen Spiegel und grinse 2 Minuten hinein! (Timer stellen!)",
                "Von wilden Blümlein die roten und Spechte sind Frühlingsboten.",
                "Antworte, sonst pflüge ich dich durch die Botanik, dass man dich für eine abgeknickte Tulpe hält. -Bud Spencer",
                "Chuck Norris isst keinen Honig, er kaut Bienen.", "Nahalla Maarsch! Oh sorry, ja ist notiert...",
@@ -165,4 +179,4 @@ class HabitStrings:
                   "Erfolg hat drei Buchstaben: TUN -Goethe",
                   "Das Gleiche lässt uns in Ruhe, aber der Widerspruch ist es, der uns produktiv macht. -Goethe",
                   "Krise ist ein produktiver Zustand. Mann muss ihm nur den Beigeschmack der Katastrophe nehmen. -Max Frisch",
-                  "-p/2 +- sqrt(( p/2 ^2) - q)", "Im Magen von Blauwalen sind 35 Bar"]
+                  "-p/2 +- sqrt(( p/2 ^2) - q)", "Im Magen von Blauwalen sind 35 Bar", "Sieben mal sieben ist feiner Sand."]
