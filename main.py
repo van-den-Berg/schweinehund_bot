@@ -38,6 +38,7 @@ if not os.path.exists(data_json_path):
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
     FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    print("initializing data file, because the directory was empty.")
 if not os.path.exists(group_whitelist_path):
     with open(group_whitelist_path, 'w') as x:
         x.write('')

@@ -35,8 +35,10 @@ class Group:
         for habit_entry in self.habit_tracking:
             if habit_entry.activity == new_activity:
                 if habit_entry.get_date() != new_habit_entry.get_date():
-                    self.habit_tracking.append(new_habit_entry)
-                    return True
+                    invalid = True
+        if not invalid:
+            self.habit_tracking.append(new_habit_entry)
+            return True
         return False
 
     def add_user_account_active(self, new_user: GroupUserAccount):
