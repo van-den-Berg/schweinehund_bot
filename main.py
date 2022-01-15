@@ -111,6 +111,7 @@ def join(msg: message):
     #  da der Trick ist, wahrscheinlich müsste die dann von telegram erben oderso.
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
+
     if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
         return
     print(f"user {msg.from_user.id} wants to join a group.")

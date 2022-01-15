@@ -60,8 +60,8 @@ def group_is_registered(msg: message, data_obj: Data, bot: TeleBot) -> bool:
 
 
 def is_valid_group_message(my_message: message, whitelist, data_obj: Data, bot: TeleBot) -> bool:
-    ret = is_group_message(my_message, bot) and group_is_whitelisted(my_message, whitelist,
-                                                                     bot) and group_is_registered(my_message, data_obj,
-                                                                                                  bot)
+    ret = all((is_group_message(my_message, bot),
+              group_is_whitelisted(my_message, whitelist, bot),
+              group_is_registered(my_message, data_obj, bot)))
     print("- Message is a valid groupMessage.") if ret else print("- Message is NOT a valid GroupMessage.")
     return ret
