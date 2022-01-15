@@ -43,26 +43,17 @@ if not os.path.exists(group_whitelist_path):
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
-# get data
 if mocking:  # create new instance of mocked data, overwrite the old one.
-    # data_obj = Mocking.mock_userdata(data_json_path)
-    # FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    data_obj = Mocking.mock_userdata(data_json_path)
+    FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
-    if os.path.isfile(data_json_path):
-        data_obj = FileServices.read_json(data_json_path)
-    else:
-        print(Strings.init_no_data_at_location(data_json_path))
-        data_obj = Data(users={}, groups={})
-        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
-
-
+# get data object, create if not existing.
+if os.path.isfile(data_json_path):
+    data_obj = FileServices.read_json(data_json_path)
 else:
-    if os.path.isfile(data_json_path):
-        data_obj = FileServices.read_json(data_json_path)
-    else:
-        print(Strings.init_no_data_at_location(data_json_path))
-        data_obj = Data(users={}, groups={})
-        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    print(Strings.init_no_data_at_location(data_json_path))
+    data_obj = Data(users={}, groups={})
+    FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
 
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
@@ -76,8 +67,9 @@ def print_user_id(msg: message):
     print("[/printUserId]")
     bot.send_message(chat_id=msg.chat.id, text=str(get_sender_id(msg)))
 
-@bot.message_handler(commands=['printData']) #prints the data_obj
-def print_data(msg:message):
+
+@bot.message_handler(commands=['printData'])  # prints the data_obj
+def print_data(msg: message):
     print("[/printData]")
     bot.send_message(msg.chat.id, FileServices.data_to_str(data_obj))
 
@@ -202,7 +194,9 @@ def add_habit_entry_sport(msg: message):
                     return
                 else:
                     print("--- Could not save activity {} for today in group {}. Activity for today already present.")
-                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
+                                                                                                      data_obj.groups[
+                                                                                                          group_id]))
             elif user_id in data_obj.groups[group_id].all_users:
                 print("--- User {} is not active in this group {}. But he was active some time ago.".format(user_id,
                                                                                                             group_id))
