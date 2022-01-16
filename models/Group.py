@@ -20,7 +20,6 @@ class Group:
         # check if the user already submitted the activity on the same day.
         if new_habit_entry in self.habit_tracking:
             return False
-
         self.habit_tracking.append(new_habit_entry)
         return True
 

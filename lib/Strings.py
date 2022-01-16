@@ -80,6 +80,11 @@ class HabitStrings:
                   f"Gruppe {group.group_name} eingetragen und wird nicht noch einmal gespeichert. Nicht cheaten ;-)"
         return ret_str
 
+    def activity_already_logged_for_today_private(activity: Activity) -> str:
+        ret_str = f"{activity.name} ist für heute bereits in allen deinen Gruppen" \
+                  f" eingetragen und wird nicht noch einmal gespeichert. Nicht cheaten ;-)"
+        return ret_str
+
     def get_habit_response(activity: Activity) -> str:
         if activity == Activity.SPORT:
             return random.choice(HabitStrings.sport)

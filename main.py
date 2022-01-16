@@ -155,11 +155,12 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-@bot.message_handler(commands=['sport', 'produktiv', 'medienfrei', 'rausgegangen', 'guterabend'])
+@bot.message_handler(content_types=['text'])  # reacts to all text messages
 def add_habit_entry(msg: message):
-    # selecting the activity on what Activity did the user commit?
-    activity: Activity = Activity.DEFAULT
+
+    #check if there is a Habbit in the msg
     msg_text = str(msg.text).lower()
+    print(msg_text)
     if "/sport" in msg_text:
         print("[/sport]")
         activity = Activity.SPORT
@@ -175,6 +176,11 @@ def add_habit_entry(msg: message):
     elif "/guterabend" in msg_text:
         print("[/guterabend]")
         activity = Activity.GOOD_EVENING
+    else:
+        print('nothing in the message')
+        return
+
+    data_obj: Data = FileServices.read_json(data_json_path)
 
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
@@ -217,15 +223,22 @@ def add_habit_entry(msg: message):
 
     # if send in private chat: add to all groups that are active in user account
     if MessageServices.is_private_message(msg, bot):
+        group_ids = set()
         for group_id in data_obj.users[user_id].active_groups:
-            data_obj.add_habit_entry(HabitEntry(user_id, activity))
-            print(f"---saved Sport entry for today in group {group_id}")
-        FileServices.save_json_overwrite(data_obj, data_json_path)
-        bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
-        bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity,
-                                                                            group_ids=data_obj.users[
-                                                                                user_id].active_groups,
-                                                                            groups=data_obj.groups))
+            tmp_bool = data_obj.groups[str(group_id)].add_habit_entry(HabitEntry(user_id, activity))
+            if tmp_bool:
+                group_ids.add(group_id)
+                print(f"---saved Sport entry for today in group {group_id}")
+
+        if len(group_ids) > 0:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
+            bot.send_message(priv_chat_id,
+                         Strings.HabitStrings.added_to_groups(activity=activity,
+                                                              group_ids=group_ids,
+                                                              groups=data_obj.groups))
+        else:
+            bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today_private(activity))
         return
 
 
