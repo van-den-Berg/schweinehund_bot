@@ -61,7 +61,7 @@ else:
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
 def print_message(msg: message):
-    print("[/print]")
+    print("[/echo]")
     bot.send_message(chat_id=msg.chat.id, text=str(msg))
 
 
@@ -74,6 +74,7 @@ def print_user_id(msg: message):
 @bot.message_handler(commands=['printData'])  # prints the data_obj
 def print_data(msg: message):
     print("[/printData]")
+    data_obj = FileServices.read_json(data_json_path)
     bot.send_message(msg.chat.id, FileServices.data_to_str(data_obj))
 
 
