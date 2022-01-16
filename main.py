@@ -155,10 +155,11 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-@bot.message_handler(content_types=['text'])  # reacts to all text messages
+# This function triggers on every text message the bot receives. It handles the activity reports submitted by the
+# users. It has to be assured that the function uses minimal computing time when no keyword is being detected.
+@bot.message_handler(content_types=['text'])  # reacts to all text messages.
 def add_habit_entry(msg: message):
-
-    #check if there is a Habbit in the msg
+    # check if there is a Habbit in the msg
     msg_text = str(msg.text).lower()
     print(msg_text)
     if "/sport" in msg_text:
@@ -176,7 +177,7 @@ def add_habit_entry(msg: message):
     elif "/guterabend" in msg_text:
         print("[/guterabend]")
         activity = Activity.GOOD_EVENING
-    else:
+    else:  # Function exits with minimal computing time.
         print('nothing in the message')
         return
 
