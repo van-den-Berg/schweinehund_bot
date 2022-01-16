@@ -211,9 +211,12 @@ def add_habit_entry(msg: message):
                     bot.send_message(group_id, ret_str)
                     return
                 else:
-                    print(f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
+                    print(
+                        f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
 
-                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
+                                                                                                      data_obj.groups[
+                                                                                                          group_id]))
 
             elif user_id in data_obj.groups[group_id].all_users:
                 print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
