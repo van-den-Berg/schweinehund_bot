@@ -42,6 +42,7 @@ if not os.path.exists(data_json_path):
 if not os.path.exists(group_whitelist_path):
     with open(group_whitelist_path, 'w') as x:
         x.write('')
+        print("initializing whitelist file, because the directory was empty.")
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
