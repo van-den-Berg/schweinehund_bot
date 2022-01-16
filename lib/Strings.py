@@ -27,6 +27,7 @@ def registration_succesfull_group(name: str) -> str:
 
 
 class Errors:
+    command_not_implemented: str = "Dieser Command ist zum aktuellen Zeitpunkt noch nicht implementiert."
     this_command_only_in_groups: str = "Dieser Command funktioniert nur in Gruppen."
     this_command_only_in_private_chat: str = "Dieser Command funktioniert nur im privaten Chat."
 
