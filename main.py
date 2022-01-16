@@ -157,8 +157,6 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-
-
 # TODO: setze einen Nutzer auf "pausiert" (entferne ihn von entsprechenden active-listen)
 # TODO: implement function
 # Distinction between group chat and private chat:
@@ -167,6 +165,7 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
 # Possible further improvements: Ask the user interactively with buttons which groups he wants to stall in private chat.
 @bot.message_handler(commands=['/pausieren'])
 def pause_active_member(msg: message):
+    print("[/pausieren]")
     data_obj: Data = FileServices.read_json(data_json_path)
 
     user_id = MessageServices.get_sender_id(msg)
@@ -176,6 +175,15 @@ def pause_active_member(msg: message):
 
     # if sent in a active group: stall the user for only this particular group.
     if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
+        print(f"- User {user_id} möchte in Gruppe {group_id} eine Pause einlegen.")
+        # check if user is valid.
+        if data_obj.is_user(user_id) and data_obj.is_group(group_id):
+            check: bool = data_obj.user_pause_group(user_id, group_id)
+            if check:
+                print(f"-- Pause wurde eingetragen.")
+                bot.send_message(priv_chat_id, Strings.GroupManagement.paused_groups_successful())
+            else:
+                print(f"-- Pause konnte nicht eingetragen werden.")
         return
 
     # if sent in private chat with the bot, stall all active groups the user has.
@@ -225,6 +233,7 @@ def scan_messages_for_habit_submissions(msg: message):
         print("[/guterabend]")
         add_habit_entry(msg, Activity.GOOD_EVENING)
     return
+
 
 def add_habit_entry(msg: message, activity: Activity):
     data_obj: Data = FileServices.read_json(data_json_path)
@@ -289,7 +298,6 @@ def add_habit_entry(msg: message, activity: Activity):
         else:
             bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today_private(activity))
         return
-
 
 
 def main_loop():

@@ -47,6 +47,16 @@ def init_no_data_at_location(path: str):
            f"An empty file for storing the data will be generated. \n " \
            f"If there should be a file with valid data, please check/change the config.json file."
 
+class GroupManagement:
+
+    def paused_groups_successful(self, group_names: [str]) -> str:
+        last_str = "Wenn du wieder mit machen möchtest, dann schreibe einfach /weiter in den Chat."
+        if len(group_names) == 1:
+            return f"Ich habe das Habit-Tracking in der Gruppe {group_names[1]} für dich pausiert. {last_str}"
+        groups_str: str = ""
+        for group_name in group_names:
+            groups_str += group_name + ", \n"
+        return f" Ich habe die Gruppen {groups_str[:-4]} für dich erfolgreich pausiert. {last_str}"
 
 class Registration:
     welcome_text = "Hey, schön dass du auch versuchst, deinen Arsch hoch zu bekommen! " \
