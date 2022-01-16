@@ -17,6 +17,8 @@ def get_sender_information(my_message: message):
     return my_message.from_user
 
 
+# Returns True if the msg type is group. Else: return False.
+# sends an error to the group chat if flag is True.
 def is_group_message(msg: message, bot: TeleBot, throw_error_message: bool = False) -> bool:
     ret = msg.chat.type == 'group'
     if ret:
@@ -27,6 +29,8 @@ def is_group_message(msg: message, bot: TeleBot, throw_error_message: bool = Fal
     return ret
 
 
+# Returns True if the msg type is private. Else: return False.
+# sends an error to the group chat if flag is True.
 def is_private_message(msg: message, bot: TeleBot, throw_error_message: bool = False) -> bool:
     ret = msg.chat.type == 'private'
     if ret:
@@ -59,9 +63,13 @@ def group_is_registered(msg: message, data_obj: Data, bot: TeleBot) -> bool:
     return ret
 
 
+# Returns true if the message meets this specs:
+# - is_group_message
+# - group_is_whitelisted
+# - group_is_registered
 def is_valid_group_message(my_message: message, whitelist, data_obj: Data, bot: TeleBot) -> bool:
     ret = all((is_group_message(my_message, bot),
-              group_is_whitelisted(my_message, whitelist, bot),
-              group_is_registered(my_message, data_obj, bot)))
+               group_is_whitelisted(my_message, whitelist, bot),
+               group_is_registered(my_message, data_obj, bot)))
     print("- Message is a valid groupMessage.") if ret else print("- Message is NOT a valid GroupMessage.")
     return ret
