@@ -42,6 +42,7 @@ if not os.path.exists(data_json_path):
 if not os.path.exists(group_whitelist_path):
     with open(group_whitelist_path, 'w') as x:
         x.write('')
+        print("initializing whitelist file, because the directory was empty.")
 group_whitelist: List[str] = FileServices.read_group_whitelist(group_whitelist_path)
 print(group_whitelist)
 
@@ -60,7 +61,7 @@ else:
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
 def print_message(msg: message):
-    print("[/print]")
+    print("[/echo]")
     bot.send_message(chat_id=msg.chat.id, text=str(msg))
 
 
@@ -73,6 +74,7 @@ def print_user_id(msg: message):
 @bot.message_handler(commands=['printData'])  # prints the data_obj
 def print_data(msg: message):
     print("[/printData]")
+    data_obj = FileServices.read_json(data_json_path)
     bot.send_message(msg.chat.id, FileServices.data_to_str(data_obj))
 
 
@@ -155,10 +157,11 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
-@bot.message_handler(content_types=['text'])  # reacts to all text messages
+# This function triggers on every text message the bot receives. It handles the activity reports submitted by the
+# users. It has to be assured that the function uses minimal computing time when no keyword is being detected.
+@bot.message_handler(content_types=['text'])  # reacts to all text messages.
 def add_habit_entry(msg: message):
-
-    #check if there is a Habbit in the msg
+    # check if there is a Habbit in the msg
     msg_text = str(msg.text).lower()
     print(msg_text)
     if "/sport" in msg_text:
@@ -176,7 +179,7 @@ def add_habit_entry(msg: message):
     elif "/guterabend" in msg_text:
         print("[/guterabend]")
         activity = Activity.GOOD_EVENING
-    else:
+    else:  # Function exits with minimal computing time.
         print('nothing in the message')
         return
 
@@ -208,9 +211,12 @@ def add_habit_entry(msg: message):
                     bot.send_message(group_id, ret_str)
                     return
                 else:
-                    print(f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
+                    print(
+                        f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
 
-                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity, data_obj.groups[group_id]))
+                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
+                                                                                                      data_obj.groups[
+                                                                                                          group_id]))
 
             elif user_id in data_obj.groups[group_id].all_users:
                 print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
