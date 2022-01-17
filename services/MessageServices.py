@@ -20,7 +20,7 @@ def get_sender_information(my_message: message):
 # Returns True if the msg type is group. Else: return False.
 # sends an error to the group chat if flag is True.
 def is_group_message(msg: message, bot: TeleBot, throw_error_message: bool = False) -> bool:
-    ret = msg.chat.type == 'group'
+    ret = (msg.chat.type == 'group') or (msg.chat.type == 'supergroup')
     if ret:
         print("- message is a GroupMessage.")
     elif throw_error_message:
