@@ -116,7 +116,7 @@ def join(msg: message):
     print(f"user {msg.from_user.id} wants to join a group.")
 
     # this command is only appliciable if send in a group chat.
-    if MessageServices.is_group_message(msg, bot, True):
+    if not MessageServices.is_group_message(msg, bot, True):
         return
 
     # check if the group it is sent from is on whitelist
