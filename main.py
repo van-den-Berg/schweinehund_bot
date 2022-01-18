@@ -82,21 +82,18 @@ def print_data(msg: message):
 def register_group(msg: message):
     group_id: str = str(msg.chat.id)
     print(f"[/registerGroup] Group {group_id} wants to register. Whitelisted Groups are: {group_whitelist}")
-    if group_id in group_whitelist:
-        print(f"- Group {group_id} is on Whitelist.")
-        if group_id not in data_obj.groups.keys():
-            print("-- not already registered.")
-            group_name = msg.chat.title
-            data_obj.add_group(Group(group_id, group_name))
-            bot.send_message(group_id, Strings.Registration.GroupRegistration.welcome_text)
-            FileServices.save_json_overwrite(data_obj, data_json_path)
-            print(f"--- Group {group_id} successfully registered for habit tracking.\n")
-        else:
-            print(f"-- Group {group_id} is already registered.")
-            bot.send_message(group_id, Strings.Registration.GroupRegistration.already_registered)
-    else:
-        print("- Group is not on Whitelist")
-        bot.send_message(group_id, Strings.Registration.GroupRegistration.group_not_allowed(msg.chat.id))
+    if MessageServices.is_group_message(msg, bot, throw_error_message=True):
+        if MessageServices.group_is_whitelisted(msg, group_whitelist, bot, throw_error_message=True):
+            if not MessageServices.group_is_registered(msg, data_obj, bot, False):
+                print("-- not already registered.")
+                group_name = msg.chat.title
+                data_obj.add_group(Group(group_id, group_name))
+                bot.send_message(group_id, Strings.Registration.GroupRegistration.welcome_text)
+                FileServices.save_json_overwrite(data_obj, data_json_path)
+                print(f"--- Group {group_id} successfully registered for habit tracking.\n")
+            else:
+                print(f"-- Group {group_id} is already registered.")
+                bot.send_message(group_id, Strings.Registration.GroupRegistration.already_registered)
     print("finish [/registerGroup]")
 
 
@@ -113,14 +110,11 @@ def join(msg: message):
     data_obj: Data = FileServices.read_json(data_json_path)
     # print(msg)
 
-    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
+    if not MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot, True):
         return
     print(f"user {msg.from_user.id} wants to join a group.")
 
-    # this command is only appliciable if send in a group chat.
-    if not MessageServices.is_group_message(msg, bot, True):
-        return
-
+    # TODO: Update the deprecated checks for the implemented methods in MessageHandler
     # check if the group it is sent from is on whitelist
     group_chat_id: str = str(msg.chat.id)
     if group_chat_id not in group_whitelist:
