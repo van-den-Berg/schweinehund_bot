@@ -4,6 +4,9 @@ import datetime
 from models.Activity import Activity
 
 
+def get_today() -> datetime.date:
+    return datetime.date.today()
+
 @dataclasses.dataclass
 class HabitEntry:
     user_id: str
