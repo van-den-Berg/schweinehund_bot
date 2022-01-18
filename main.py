@@ -6,8 +6,10 @@ from typing import List
 import telebot  # importing pyTelegramBotAPI library
 import time
 import sys
+import datetime
 
 # import telegram_send
+import models.HabitEntry
 from lib.Strings import registration_succesfull_group, registration_succesfull_private
 from models.Activity import Activity
 from models.Data import Data, Group, GroupUserAccount
@@ -245,34 +247,50 @@ def reactivate_inactive_member(msg: message):
 def scan_messages_for_habit_submissions(msg: message):
     # check if there is a Habbit in the msg
     msg_text = str(msg.text).lower()
-    print(msg_text)
+    yesterday_flag: bool = "gestern" in msg_text
+    today_flag: bool = "heute" in msg_text
+
+    if yesterday_flag and today_flag:
+        print(f"[message] in group {msg.chat.id}: {msg_text}")
+        print(f"-- detected both 'gestern' and 'heute' in the message. This is an unhandled case and nothing will be saved. An error message will be thrown.")
+        bot.send_message(msg.chat.id, Strings.HabitStrings.yesterday_and_today_in_message_error)
+        return
+    if yesterday_flag: print(f"-- keyword 'gestern' detected. Saving Habits for the last day.")
     if "/sport" in msg_text:
         print("[/sport]")
-        add_habit_entry(msg, Activity.SPORT)
+        add_habit_entry(msg, Activity.SPORT, yesterday_flag)
     if "/produktiv" in msg_text:
         print("[/produktiv]")
-        add_habit_entry(msg, Activity.PRODUCTIVE_BY_10)
+        add_habit_entry(msg, Activity.PRODUCTIVE_BY_10, yesterday_flag)
     if "/medienfrei" in msg_text:
         print("[/medienfrei]")
-        add_habit_entry(msg, Activity.NO_MEDIA_DURING_WORK)
+        add_habit_entry(msg, Activity.NO_MEDIA_DURING_WORK, yesterday_flag)
     if "/rausgegangen" in msg_text:
         print("[/rausgegangen]")
-        add_habit_entry(msg, Activity.WENT_OUTSIDE)
+        add_habit_entry(msg, Activity.WENT_OUTSIDE, yesterday_flag)
     if "/guterabend" in msg_text:
         print("[/guterabend]")
-        add_habit_entry(msg, Activity.GOOD_EVENING)
+        add_habit_entry(msg, Activity.GOOD_EVENING, yesterday_flag)
+    print(f"[message] in group {msg.chat.id}: {msg_text}")
     return
 
 
-def add_habit_entry(msg: message, activity: Activity):
+def add_habit_entry(msg: message, activity: Activity, yesterday_flag: bool = False):
     data_obj: Data = FileServices.read_json(data_json_path)
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
     group_id = str(msg.chat.id)
 
+    date = models.HabitEntry.get_today()
+    day_string: str = "heute"
+
+    if yesterday_flag:
+        date = (date - datetime.timedelta(days=1)).isoformat()
+        day_string = "gestern"
+
     # check if user has a user account
-    if user_id not in data_obj.users:
+    if not data_obj.is_user(user_id):
         print(f"-- User {user_id} has no user Account.")
         bot.send_message(group_id, Strings.Errors.user_not_registered_at_all)
         return
@@ -283,19 +301,19 @@ def add_habit_entry(msg: message, activity: Activity):
     if MessageServices.is_group_message(msg, bot):
         if group_id in data_obj.groups and user_id in data_obj.users:
             if user_id in data_obj.groups[group_id].active_users:
-                success = data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=activity))
+                success = data_obj.add_habit_entry(HabitEntry(user_id=user_id, activity=activity, date=date))
                 if success:
                     FileServices.save_json_overwrite(data_obj, data_json_path)
-                    print(f"--- saved {activity.name} entry for today in group {group_id}")
+                    print(f"--- saved {activity.name} entry for {day_string} in group {group_id}")
                     ret_str = Strings.HabitStrings.get_habit_response(activity=activity)
                     print(f"--- Return Message: {ret_str}")
-                    bot.send_message(group_id, ret_str)
+                    bot.send_message(priv_chat_id, ret_str)
                     return
                 else:
                     print(
-                        f"--- Could not save activity {activity} for today in group {group_id}. Activity for today already present.")
+                        f"--- Could not save activity {activity} in group {group_id}. Activity for {day_string} already present.")
 
-                    bot.send_message(group_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
+                    bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
                                                                                                       data_obj.groups[
                                                                                                           group_id]))
 
@@ -307,23 +325,21 @@ def add_habit_entry(msg: message, activity: Activity):
                 print(f"--- User {user_id} has not joined the group {group_id} yet.")
                 bot.send_message(group_id, Strings.Errors.user_not_in_this_group)
                 return
+        return
 
     # if send in private chat: add to all groups that are active in user account
     if MessageServices.is_private_message(msg, bot):
         group_ids = set()
         for group_id in data_obj.users[user_id].active_groups:
-            tmp_bool = data_obj.groups[str(group_id)].add_habit_entry(HabitEntry(user_id, activity))
+            tmp_bool = data_obj.groups[str(group_id)].add_habit_entry(HabitEntry(user_id, activity, date=date))
             if tmp_bool:
                 group_ids.add(group_id)
-                print(f"---saved Sport entry for today in group {group_id}")
+                print(f"---saved entry for {day_string} in group {group_id}")
 
         if len(group_ids) > 0:
             FileServices.save_json_overwrite(data_obj, data_json_path)
             bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
-            bot.send_message(priv_chat_id,
-                             Strings.HabitStrings.added_to_groups(activity=activity,
-                                                                  group_ids=group_ids,
-                                                                  groups=data_obj.groups))
+            #bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity, group_ids=group_ids, groups=data_obj.groups))
         else:
             bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today_private(activity))
         return

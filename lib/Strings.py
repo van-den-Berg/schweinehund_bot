@@ -82,6 +82,8 @@ class Registration:
 @dataclasses.dataclass
 class HabitStrings:
 
+    yesterday_and_today_in_message_error = "Das eintragen von Erfolgen von gestern und heute innerhalb einer Nachricht wird nicht unterstützt. Bitte sende zwei einzelne Nachrichten."
+
     def added_to_groups(activity: Activity, group_ids: Set[str], groups: Dict[str, Group]) -> str:
         ret_str = f"Die Aktivität {activity} wurde erfolgreich in folgenden Gruppen hinzuefügt:\n"
         for group_id in group_ids:
