@@ -27,6 +27,7 @@ def registration_succesfull_group(name: str) -> str:
 
 
 class Errors:
+    command_not_implemented: str = "Dieser Command ist zum aktuellen Zeitpunkt noch nicht implementiert."
     this_command_only_in_groups: str = "Dieser Command funktioniert nur in Gruppen."
     this_command_only_in_private_chat: str = "Dieser Command funktioniert nur im privaten Chat."
 
@@ -45,6 +46,19 @@ def init_no_data_at_location(path: str):
            f"'data_json_path': '{path}'. \n " \
            f"An empty file for storing the data will be generated. \n " \
            f"If there should be a file with valid data, please check/change the config.json file."
+
+class GroupManagement:
+
+    paused_groups_successful = "Ich habe das Habit-Tracking in deinen aktiven Gruppen für dich pausiert. Wenn du wieder mit machen möchtest, dann schreibe einfach /weiter in den Chat."
+
+    reactivated_groups_successful = "Willkommen zurück! Das Habit-Tracking wurde in allen deinen Gruppen wieder aktiviert."
+
+    def paused_single_group_successful(group_name: str) -> str:
+        last_str = "Wenn du wieder mit machen möchtest, dann schreibe einfach /weiter in den Chat."
+        return f"Ich habe das Habit-Tracking in der Gruppe {group_name} für dich pausiert. {last_str}"
+
+    def reactivated_single_group_successful(group_name: str) -> str:
+        return f"Willkommen zurück! Das Habit-Tracking wurde in der Gruppe {group_name} wieder aktiviert."
 
 
 class Registration:

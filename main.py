@@ -118,8 +118,8 @@ def join(msg: message):
     print(f"user {msg.from_user.id} wants to join a group.")
 
     # this command is only appliciable if send in a group chat.
-    if msg.chat.type != "group":
-        bot.send_message(msg.chat.id, Strings.Errors.this_command_only_in_groups)
+    if not MessageServices.is_group_message(msg, bot, True):
+        return
 
     # check if the group it is sent from is on whitelist
     group_chat_id: str = str(msg.chat.id)
@@ -157,34 +157,121 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
     print(data_obj)
 
 
+# TODO: setze einen Nutzer auf "pausiert" (entferne ihn von entsprechenden active-listen)
+# TODO: implement function
+# Distinction between group chat and private chat:
+# if sent in private chat with the bot, stall all active groups the user has.
+# if sent in a active group: stall the user for only this particular group.
+# Possible further improvements: Ask the user interactively with buttons which groups he wants to stall in private chat.
+@bot.message_handler(commands=['urlaub'])
+def pause_active_member(msg: message):
+    print("[/urlaub]")
+    data_obj: Data = FileServices.read_json(data_json_path)
+
+    user_id = MessageServices.get_sender_id(msg)
+    if not data_obj.is_user(user_id):
+        bot.send_message(msg.chat.id, Strings.Errors.user_not_registered_at_all)
+        return
+    priv_chat_id = data_obj.users[user_id].private_chat_id
+    chatType = str(msg.chat.type)
+    group_id = str(msg.chat.id)
+
+    # if sent in private chat with the bot, stall all active groups the user has.
+    if MessageServices.is_private_message(msg, bot, False):
+        check: bool = data_obj.user_pause_all_groups(user_id)
+        if check:
+            print(f"-- Pause wurde eingetragen.")
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            bot.send_message(priv_chat_id, Strings.GroupManagement.paused_groups_successful)
+        else:
+            print(f"-- Pause konnte nicht eingetragen werden.")
+        return
+
+    # if sent in an active group: stall the user for only this particular group.
+    if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot, False):
+        print(f"- User {user_id} möchte in Gruppe {group_id} eine Pause einlegen.")
+        check: bool = data_obj.user_pause_group(user_id, group_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- Pause wurde eingetragen.")
+            bot.send_message(priv_chat_id, Strings.GroupManagement.paused_single_group_successful(msg.chat.title))
+        else:
+            print(f"-- Pause konnte nicht eingetragen werden.")
+        return
+    print(f"-- Pause konnte nicht eingetragen werden, da die Message keinem ChatTypen zugeordnet werden konnte.")
+
+    # TODO: implement Error handling for logging messages permanently that the bot didnt know what to do with.
+
+
+# TODO: use a better command text.
+# TODO: implement function
+# reactivate stalled groups.
+# if sent in private chat: reactivate all groups the user has stalled at the moment.
+# if sent in active group chat: reactivate the user in that group if the user stalled the group.
+# Possible further impovements: Ask the user interactively with buttons which groups he wants to rejoin in private chat.
+@bot.message_handler(commands=['weiter'])
+def reactivate_inactive_member(msg: message):
+    data_obj: Data = FileServices.read_json(data_json_path)
+    user_id = MessageServices.get_sender_id(msg)
+    priv_chat_id = data_obj.users[user_id].private_chat_id
+    chatType = str(msg.chat.type)
+    group_id = str(msg.chat.id)
+
+    if MessageServices.is_private_message(msg, bot, False):
+        check: bool = data_obj.user_activate_all_passive_groups(user_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- erfolgreich alle Gruppen reaktiviert.")
+            bot.send_message(priv_chat_id, Strings.GroupManagement.reactivated_groups_successful)
+            return
+        else:
+            print(f"-- Für user {user_id} konnte keine Gruppe voll reaktiviert werden.")
+            return
+    if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot, False):
+        check: bool = data_obj.user_reactivate_single_group(user_id, group_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- erfolgreich in Gruppe {group_id} reaktiviert.")
+            bot.send_message(priv_chat_id,
+                             Strings.GroupManagement.reactivated_single_group_successful(group_name=msg.chat.title))
+            return
+        else:
+            print(f"-- Für user {user_id} konnte Gruppe {group_id} nicht reaktiviert werden.")
+            return
+    bot.send_message(priv_chat_id, "Das hat leider nicht funktioniert.")
+
+
+# TODO: implement functionality to delete a message sent by a user.
+
+
+# IMPORTANT: THIS MESSAGE NEEDS TO BE THE LAST MESSAGE THAT HAS A BOT TRIGGER!
 # This function triggers on every text message the bot receives. It handles the activity reports submitted by the
 # users. It has to be assured that the function uses minimal computing time when no keyword is being detected.
 @bot.message_handler(content_types=['text'])  # reacts to all text messages.
-def add_habit_entry(msg: message):
+def scan_messages_for_habit_submissions(msg: message):
     # check if there is a Habbit in the msg
     msg_text = str(msg.text).lower()
     print(msg_text)
     if "/sport" in msg_text:
         print("[/sport]")
-        activity = Activity.SPORT
-    elif "/produktiv" in msg_text:
+        add_habit_entry(msg, Activity.SPORT)
+    if "/produktiv" in msg_text:
         print("[/produktiv]")
-        activity = Activity.PRODUCTIVE_BY_10
-    elif "/medienfrei" in msg_text:
+        add_habit_entry(msg, Activity.PRODUCTIVE_BY_10)
+    if "/medienfrei" in msg_text:
         print("[/medienfrei]")
-        activity = Activity.NO_MEDIA_DURING_WORK
-    elif "/rausgegangen" in msg_text:
+        add_habit_entry(msg, Activity.NO_MEDIA_DURING_WORK)
+    if "/rausgegangen" in msg_text:
         print("[/rausgegangen]")
-        activity = Activity.WENT_OUTSIDE
-    elif "/guterabend" in msg_text:
+        add_habit_entry(msg, Activity.WENT_OUTSIDE)
+    if "/guterabend" in msg_text:
         print("[/guterabend]")
-        activity = Activity.GOOD_EVENING
-    else:  # Function exits with minimal computing time.
-        print('nothing in the message')
-        return
+        add_habit_entry(msg, Activity.GOOD_EVENING)
+    return
 
+
+def add_habit_entry(msg: message, activity: Activity):
     data_obj: Data = FileServices.read_json(data_json_path)
-
     user_id = MessageServices.get_sender_id(msg)
     priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
@@ -240,9 +327,9 @@ def add_habit_entry(msg: message):
             FileServices.save_json_overwrite(data_obj, data_json_path)
             bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
             bot.send_message(priv_chat_id,
-                         Strings.HabitStrings.added_to_groups(activity=activity,
-                                                              group_ids=group_ids,
-                                                              groups=data_obj.groups))
+                             Strings.HabitStrings.added_to_groups(activity=activity,
+                                                                  group_ids=group_ids,
+                                                                  groups=data_obj.groups))
         else:
             bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today_private(activity))
         return

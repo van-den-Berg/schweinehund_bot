@@ -27,4 +27,17 @@ class Group:
         if new_user.user_id not in self.user_accounts.keys():
             self.user_accounts[new_user.user_id] = new_user
             self.all_users.add(new_user.user_id)
-        self.active_users.add(new_user.user_id)  # outside of if-scope. so that adding an already existing user: the user will be set to active.
+        self.active_users.add(
+            new_user.user_id)  # outside of if-scope. so that adding an already existing user: the user will be set to active.
+
+    def user_pause_group(self, user_id: str) -> bool:
+        if user_id in self.active_users:
+            self.active_users.remove(user_id)
+            return True
+        return False
+
+    def reactivate_user(self, user_id: str) -> bool:
+        if user_id in self.all_users and user_id not in self.active_users:
+            self.active_users.add(user_id)
+            return True
+        return False

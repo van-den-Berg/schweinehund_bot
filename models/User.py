@@ -18,6 +18,17 @@ class User:
         self.tel_username = username
         self.private_chat_id = private_chat_id
 
+    def user_pause_group(self, group_id) -> bool:
+        if group_id in self.active_groups:
+            self.active_groups.remove(group_id)
+            return True
+        return False
+
+    def activate_group(self, group_id) -> bool:
+        if group_id not in self.active_groups:
+            self.active_groups.add(group_id)
+            return True
+        return False
 
 @dataclasses.dataclass
 class GroupUserAccount:
