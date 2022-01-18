@@ -58,11 +58,42 @@ class Data:
         return False
 
     def user_pause_group(self, user_id: str, group_id: str) -> bool:
-        return self.users[user_id].user_pause_group(group_id) and self.groups[group_id].user_pause_group(user_id)
+        print(f"removing user {user_id} from group {group_id}")
+        if self.users[user_id].user_pause_group(group_id):
+            if self.groups[group_id].user_pause_group(user_id):
+                print(f"--- user removed successful")
+                return True
+            print(f"--- error in group.user_pause_group")
+            return False
+        print(f"--- error in user.user_pause_group")
+        return False
 
     def user_pause_all_groups(self, user_id: str) -> bool:
         check: bool = True
-        for group_id in self.users[user_id].active_groups:
+        for group_id in self.users[user_id].active_groups.copy():
+            print(f"removing user {user_id} from group {group_id}")
             check = self.groups[group_id].user_pause_group(user_id) and check
             check = self.users[user_id].user_pause_group(group_id) and check
         return check
+
+    def user_activate_all_passive_groups(self, user_id: str) -> bool:
+        something_changed: bool = False
+        group_ids: set[str] = set()  # nothing done with the
+        for group in self.groups.values():
+            group_id: str = group.group_id
+            flag: bool = group.reactivate_user(user_id) and self.users[user_id].activate_group(group_id)
+            if flag:
+                group_ids.add(group_id)
+                print(f"reactivated user {user_id} in group {group_id}")
+            something_changed = something_changed or flag
+        if something_changed: return True
+        return False
+
+    def user_reactivate_single_group(self, user_id: str, group_id: str) -> bool:
+        something_changed: bool = False
+        something_changed = self.groups[group_id].reactivate_user(user_id) and \
+                            self.users[user_id].activate_group(group_id)
+        if something_changed:
+            print(f"reactivated user {user_id} in group {group_id}")
+            return True
+        return False

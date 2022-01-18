@@ -24,6 +24,12 @@ class User:
             return True
         return False
 
+    def activate_group(self, group_id) -> bool:
+        if group_id not in self.active_groups:
+            self.active_groups.add(group_id)
+            return True
+        return False
+
 @dataclasses.dataclass
 class GroupUserAccount:
     user_id: str  # user_id
