@@ -163,35 +163,44 @@ def register_user_and_join_group(msg: message, group_chat_id: str):
 # if sent in private chat with the bot, stall all active groups the user has.
 # if sent in a active group: stall the user for only this particular group.
 # Possible further improvements: Ask the user interactively with buttons which groups he wants to stall in private chat.
-@bot.message_handler(commands=['/pausieren'])
+@bot.message_handler(commands=['urlaub'])
 def pause_active_member(msg: message):
-    print("[/pausieren]")
+    print("[/urlaub]")
     data_obj: Data = FileServices.read_json(data_json_path)
 
     user_id = MessageServices.get_sender_id(msg)
+    if not data_obj.is_user(user_id):
+        bot.send_message(msg.chat.id, Strings.Errors.user_not_registered_at_all)
+        return
     priv_chat_id = data_obj.users[user_id].private_chat_id
     chatType = str(msg.chat.type)
     group_id = str(msg.chat.id)
 
-    # if sent in a active group: stall the user for only this particular group.
-    if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot):
-        print(f"- User {user_id} möchte in Gruppe {group_id} eine Pause einlegen.")
-        # check if user is valid.
-        if data_obj.is_user(user_id) and data_obj.is_group(group_id):
-            check: bool = data_obj.user_pause_group(user_id, group_id)
-            if check:
-                print(f"-- Pause wurde eingetragen.")
-                bot.send_message(priv_chat_id, Strings.GroupManagement.paused_groups_successful())
-            else:
-                print(f"-- Pause konnte nicht eingetragen werden.")
-        return
-
     # if sent in private chat with the bot, stall all active groups the user has.
-    if MessageServices.is_private_message(msg, bot):
+    if MessageServices.is_private_message(msg, bot, False):
+        check: bool = data_obj.user_pause_all_groups(user_id)
+        if check:
+            print(f"-- Pause wurde eingetragen.")
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            bot.send_message(priv_chat_id, Strings.GroupManagement.paused_groups_successful)
+        else:
+            print(f"-- Pause konnte nicht eingetragen werden.")
         return
 
-    bot.send_message(msg.chat.id, Strings.Errors.command_not_implemented)
-    return
+    # if sent in an active group: stall the user for only this particular group.
+    if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot, False):
+        print(f"- User {user_id} möchte in Gruppe {group_id} eine Pause einlegen.")
+        check: bool = data_obj.user_pause_group(user_id, group_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- Pause wurde eingetragen.")
+            bot.send_message(priv_chat_id, Strings.GroupManagement.paused_single_group_successful(msg.chat.title))
+        else:
+            print(f"-- Pause konnte nicht eingetragen werden.")
+        return
+    print(f"-- Pause konnte nicht eingetragen werden, da die Message keinem ChatTypen zugeordnet werden konnte.")
+
+    # TODO: implement Error handling for logging messages permanently that the bot didnt know what to do with.
 
 
 # TODO: use a better command text.
@@ -200,10 +209,36 @@ def pause_active_member(msg: message):
 # if sent in private chat: reactivate all groups the user has stalled at the moment.
 # if sent in active group chat: reactivate the user in that group if the user stalled the group.
 # Possible further impovements: Ask the user interactively with buttons which groups he wants to rejoin in private chat.
-@bot.message_handler(commands=['/weiter'])
+@bot.message_handler(commands=['weiter'])
 def reactivate_inactive_member(msg: message):
-    bot.send_message(msg.chat.id, Strings.Errors.command_not_implemented)
-    return
+    data_obj: Data = FileServices.read_json(data_json_path)
+    user_id = MessageServices.get_sender_id(msg)
+    priv_chat_id = data_obj.users[user_id].private_chat_id
+    chatType = str(msg.chat.type)
+    group_id = str(msg.chat.id)
+
+    if MessageServices.is_private_message(msg, bot, False):
+        check: bool = data_obj.user_activate_all_passive_groups(user_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- erfolgreich alle Gruppen reaktiviert.")
+            bot.send_message(priv_chat_id, Strings.GroupManagement.reactivated_groups_successful)
+            return
+        else:
+            print(f"-- Für user {user_id} konnte keine Gruppe voll reaktiviert werden.")
+            return
+    if MessageServices.is_valid_group_message(msg, group_whitelist, data_obj, bot, False):
+        check: bool = data_obj.user_reactivate_single_group(user_id, group_id)
+        if check:
+            FileServices.save_json_overwrite(data_obj, data_json_path)
+            print(f"-- erfolgreich in Gruppe {group_id} reaktiviert.")
+            bot.send_message(priv_chat_id,
+                             Strings.GroupManagement.reactivated_single_group_successful(group_name=msg.chat.title))
+            return
+        else:
+            print(f"-- Für user {user_id} konnte Gruppe {group_id} nicht reaktiviert werden.")
+            return
+    bot.send_message(priv_chat_id, "Das hat leider nicht funktioniert.")
 
 
 # TODO: implement functionality to delete a message sent by a user.

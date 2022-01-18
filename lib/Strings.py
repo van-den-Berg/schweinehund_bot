@@ -49,14 +49,17 @@ def init_no_data_at_location(path: str):
 
 class GroupManagement:
 
-    def paused_groups_successful(self, group_names: [str]) -> str:
+    paused_groups_successful = "Ich habe das Habit-Tracking in deinen aktiven Gruppen für dich pausiert. Wenn du wieder mit machen möchtest, dann schreibe einfach /weiter in den Chat."
+
+    reactivated_groups_successful = "Willkommen zurück! Das Habit-Tracking wurde in allen deinen Gruppen wieder aktiviert."
+
+    def paused_single_group_successful(group_name: str) -> str:
         last_str = "Wenn du wieder mit machen möchtest, dann schreibe einfach /weiter in den Chat."
-        if len(group_names) == 1:
-            return f"Ich habe das Habit-Tracking in der Gruppe {group_names[1]} für dich pausiert. {last_str}"
-        groups_str: str = ""
-        for group_name in group_names:
-            groups_str += group_name + ", \n"
-        return f" Ich habe die Gruppen {groups_str[:-4]} für dich erfolgreich pausiert. {last_str}"
+        return f"Ich habe das Habit-Tracking in der Gruppe {group_name} für dich pausiert. {last_str}"
+
+    def reactivated_single_group_successful(group_name: str) -> str:
+        return f"Willkommen zurück! Das Habit-Tracking wurde in der Gruppe {group_name} wieder aktiviert."
+
 
 class Registration:
     welcome_text = "Hey, schön dass du auch versuchst, deinen Arsch hoch zu bekommen! " \
