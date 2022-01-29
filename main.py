@@ -66,6 +66,8 @@ if os.path.isfile(data_json_path):
         print(f"!! Error in reading data-file at startup. !!\n"
               f"!! The file Path is: {data_json_path}\n"
               f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        print(sys.stderr, '\nExiting by bad file read\n')
+        sys.exit(1)
 else:
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
@@ -75,6 +77,8 @@ else:
         print(f"!! Error in creating new file.       !!\n"
               f"!! The file Path is: {data_json_path} \n"
               f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        print(sys.stderr, '\nExiting by bad file read\n')
+        sys.exit(1)
 
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
