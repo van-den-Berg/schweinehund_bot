@@ -21,6 +21,10 @@ from services.MessageServices import get_sender_id
 from lib import Strings
 from testing import Mocking
 
+version: str = "1.1"
+
+print(Strings.ProgramPrinter.starting_text(version));
+
 config_json_path: str = 'config.json'
 data_json_path: str
 group_whitelist_path: str
@@ -32,6 +36,8 @@ bot = telebot.TeleBot(token=config_dict["tel_api_token"])
 mocking: bool = bool(config_dict["mocking"])
 data_json_path = config_dict["mock_data_json_path"] if mocking else config_dict["data_json_path"]
 group_whitelist_path = config_dict["group_whitelist_path"]
+
+print(Strings.ProgramPrinter.init_mocking_status(mocking, data_json_path))
 
 if not os.path.exists(data_json_path):
     # the file should also be created with save_json_overwrite.
@@ -54,11 +60,21 @@ if mocking:  # create new instance of mocked data, overwrite the old one.
 
 # get data object, create if not existing.
 if os.path.isfile(data_json_path):
-    data_obj = FileServices.read_json(data_json_path)
+    try:
+        data_obj = FileServices.read_json(data_json_path)
+    except:
+        print(f"!! Error in reading data-file at startup. !!\n"
+              f"!! The file Path is: {data_json_path}\n"
+              f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 else:
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
-    FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    try:
+        FileServices.save_json_overwrite(json_data=data_obj, file_path=data_json_path)
+    except:
+        print(f"!! Error in creating new file.       !!\n"
+              f"!! The file Path is: {data_json_path} \n"
+              f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
@@ -252,7 +268,8 @@ def scan_messages_for_habit_submissions(msg: message):
 
     if yesterday_flag and today_flag:
         print(f"[message] in group {msg.chat.id}: {msg_text}")
-        print(f"-- detected both 'gestern' and 'heute' in the message. This is an unhandled case and nothing will be saved. An error message will be thrown.")
+        print(
+            f"-- detected both 'gestern' and 'heute' in the message. This is an unhandled case and nothing will be saved. An error message will be thrown.")
         bot.send_message(msg.chat.id, Strings.HabitStrings.yesterday_and_today_in_message_error)
         return
     if yesterday_flag: print(f"-- keyword 'gestern' detected. Saving Habits for the last day.")
@@ -314,8 +331,8 @@ def add_habit_entry(msg: message, activity: Activity, yesterday_flag: bool = Fal
                         f"--- Could not save activity {activity} in group {group_id}. Activity for {day_string} already present.")
 
                     bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today(activity,
-                                                                                                      data_obj.groups[
-                                                                                                          group_id]))
+                                                                                                          data_obj.groups[
+                                                                                                              group_id]))
 
             elif user_id in data_obj.groups[group_id].all_users:
                 print(f"--- User {user_id} is not active in this group {group_id}. But he was active some time ago.")
@@ -339,7 +356,7 @@ def add_habit_entry(msg: message, activity: Activity, yesterday_flag: bool = Fal
         if len(group_ids) > 0:
             FileServices.save_json_overwrite(data_obj, data_json_path)
             bot.send_message(priv_chat_id, Strings.HabitStrings.get_habit_response(activity=activity))
-            #bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity, group_ids=group_ids, groups=data_obj.groups))
+            # bot.send_message(priv_chat_id, Strings.HabitStrings.added_to_groups(activity=activity, group_ids=group_ids, groups=data_obj.groups))
         else:
             bot.send_message(priv_chat_id, Strings.HabitStrings.activity_already_logged_for_today_private(activity))
         return

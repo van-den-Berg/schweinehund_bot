@@ -201,3 +201,33 @@ class HabitStrings:
                   "Das Gleiche lässt uns in Ruhe, aber der Widerspruch ist es, der uns produktiv macht. -Goethe",
                   "Krise ist ein produktiver Zustand. Mann muss ihm nur den Beigeschmack der Katastrophe nehmen. -Max Frisch",
                   "-p/2 +- sqrt(( p/2 ^2) - q)", "Im Magen von Blauwalen sind 35 Bar", "Sieben mal sieben ist feiner Sand."]
+
+class ProgramPrinter:
+    def starting_text(version:str) -> str:
+        return f"" \
+        f"****************************************************** \n" \
+        f"**   Habit Tracking with Schweinehund Bot           ** \n" \
+        f"**       by Paul and Tim van den Berg               ** \n" \
+        f"****************************************************** \n" \
+        f"**   Visit the GitHub Respoitory at:                ** \n" \
+        f"** https://github.com/van-den-Berg/schweinehund_bot ** \n" \
+        f"** You are currently running Version {version}  \n" \
+        f"******************************************************"
+
+    def init_mocking_status(isMocking: bool, data_path:str) -> str:
+        if (isMocking) :
+            print_str: str = f"\n" \
+                             f"******************************************************\n" \
+                             f"**** Mocking is enabled.                            **\n" \
+                             f"**** You will start with a clear data file.         **\n" \
+                             f"**** The data will be read and written from:        **\n" \
+                             f"****     {data_path}  \n" \
+                             f"******************************************************\n"
+        else :
+            print_str: str = f"\n" \
+                             f"******************************************************\n" \
+                             f"**** Mocking is disabled.                           **\n" \
+                             f"**** The data will be read and written from         **\n" \
+                             f"****     {data_path}  \n" \
+                             f"******************************************************\n"
+        return print_str
