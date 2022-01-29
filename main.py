@@ -62,10 +62,16 @@ if mocking:  # create new instance of mocked data, overwrite the old one.
 if os.path.isfile(data_json_path):
     try:
         data_obj = FileServices.read_json(data_json_path)
-    except:
-        print(f"!! Error in reading data-file at startup. !!\n"
+    except OSError as err:
+        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+              f"!! Error in reading data-file at startup. !!\n"
               f"!! The file Path is: {data_json_path}\n"
+              f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+              f"!!!!   Error Taceback:             !!!!!!!!\n"
+              f"{err}\n"
               f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        print(sys.stderr, '\nExiting by bad file read\n')
+        sys.exit(1)
 else:
     print(Strings.init_no_data_at_location(data_json_path))
     data_obj = Data(users={}, groups={})
@@ -75,6 +81,8 @@ else:
         print(f"!! Error in creating new file.       !!\n"
               f"!! The file Path is: {data_json_path} \n"
               f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        print(sys.stderr, '\nExiting by bad file read\n')
+        sys.exit(1)
 
 
 @bot.message_handler(commands=['echo'])  # Prints the content of the sent message
