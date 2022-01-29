@@ -311,7 +311,7 @@ def add_habit_entry(msg: message, activity: Activity, yesterday_flag: bool = Fal
     day_string: str = "heute"
 
     if yesterday_flag:
-        date = (date - datetime.timedelta(days=1)).isoformat()
+        date = models.HabitEntry.get_yesterday()
         day_string = "gestern"
 
     # check if user has a user account
