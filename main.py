@@ -62,9 +62,13 @@ if mocking:  # create new instance of mocked data, overwrite the old one.
 if os.path.isfile(data_json_path):
     try:
         data_obj = FileServices.read_json(data_json_path)
-    except:
-        print(f"!! Error in reading data-file at startup. !!\n"
+    except OSError as err:
+        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+              f"!! Error in reading data-file at startup. !!\n"
               f"!! The file Path is: {data_json_path}\n"
+              f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+              f"!!!!   Error Taceback:             !!!!!!!!\n"
+              f"{err}\n"
               f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
         print(sys.stderr, '\nExiting by bad file read\n')
         sys.exit(1)
